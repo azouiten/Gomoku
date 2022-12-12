@@ -48,7 +48,7 @@ std::pair<t_coord, int> maximize(int depth, t_board &board, int &alpha, int &bet
     for (int i = 0; i < children.size(); i++)
     {
         // run minimax on the current child as a minimizer
-        result = minimax(depth - 1, children[i], alpha, beta, false);
+        result = minimax(depth - 1, update_board(children[i]), alpha, beta, false);
 
         // proun the rest of the children
         alpha = std::max(alpha, SCORE(result));
@@ -82,7 +82,7 @@ std::pair<std::pair<int, int>, int> minimize(int depth, t_board &board, int &alp
     for (int i = 0; i < children.size(); i++)
     {
         // run minimax on the current child as a minimizer
-        result = minimax(depth - 1, children[i], alpha, beta, true);
+        result = minimax(depth - 1, update_board(children[i]), alpha, beta, true);
 
         // proun the rest of the children
         beta = std::min(beta, SCORE(result));
