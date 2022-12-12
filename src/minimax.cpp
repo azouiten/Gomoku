@@ -17,13 +17,25 @@ t_super superpose(t_board &board)
 }
 
 
-std::vector<std::pair<int, int> > get_possible_coords(t_board)
+std::vector<t_coord> get_possible_coords(t_board)
 {
     
 }
 
 
-std::pair<std::pair<int, int>, int> maximize(int depth, t_board &board, int &alpha, int &beta)
+t_board update_board(t_board &board, t_coord coord, int turn)
+{
+    t_board new_board;
+    std::bitset<19> &mask;
+
+    new_board = board;
+    mask = turn ? new_board[coord.first].first : new_board[coord.first].second;
+    mask.set(coord.second, 1);
+    return new_board;
+}
+
+
+std::pair<t_coord, int> maximize(int depth, t_board &board, int &alpha, int &beta, int turn)
 {
     std::pair<std::pair<int, int>, int> result;
     int best_index;
@@ -55,7 +67,9 @@ std::pair<std::pair<int, int>, int> maximize(int depth, t_board &board, int &alp
 }
 
 
-std::pair<std::pair<int, int>, int> minimize(int depth, t_board &board, int &alpha, int &beta)
+
+
+std::pair<std::pair<int, int>, int> minimize(int depth, t_board &board, int &alpha, int &beta, int turn)
 {
     std::pair<std::pair<int, int>, int> result;
     int best_index;
@@ -87,7 +101,7 @@ std::pair<std::pair<int, int>, int> minimize(int depth, t_board &board, int &alp
 }
 
 
-std::pair<std::pair<int, int>, int> minimax(int depth, t_board &board, int &alpha, int &beta, int is_max)
+std::pair<std::pair<int, int>, int> minimax(int depth, t_board &board, int &alpha, int &beta, int is_max, int turn)
 {
     if (depth == 0)
         return static_evaluation(board);
