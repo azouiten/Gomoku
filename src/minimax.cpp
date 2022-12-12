@@ -71,7 +71,7 @@ std::pair<std::pair<int, int>, int> minimize(int depth, t_board &board, int &alp
         result = minimax(depth - 1, children[i], alpha, beta, true);
 
         // proun the rest of the children
-        alpha = std::min(alpha, SCORE(result));
+        beta = std::min(beta, SCORE(result));
         if (beta <= alpha)
             break ;
 
