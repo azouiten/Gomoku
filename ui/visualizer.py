@@ -92,3 +92,9 @@ class Game:
 
     def run(self):
         self.loop()
+
+
+if __name__ == "__main__":
+    game = Game()
+    game.run()
+
