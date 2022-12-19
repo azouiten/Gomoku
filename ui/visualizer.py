@@ -32,3 +32,10 @@ class Window(GameSurface):
     """
     def __init__(self):
         super().__init__(main_surface=True)
+
+class Board(GameSurface):
+    """ 
+    This class represents the surface of the board.
+    """
+    def __init__(self):
+        super().__init__()
