@@ -56,3 +56,39 @@ class Final(GameSurface):
     def __init__(self):
         super().__init__()
 
+class Game:
+    """
+    This class represents the game logic.
+    """
+    def __init__(self):
+        self._window = Window()
+        self._setup = Setup()
+        self._board = Board()
+        self._final = Final()
+        self.repeat = True
+
+
+    @property
+    def window(self):
+        return self._window
+
+    @property
+    def setup(self):
+        return self._setup
+
+    @property
+    def board(self):
+        return self._board
+
+    @property
+    def final(self):
+        return self._final
+
+    def loop(self):
+        while self.repeat:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.repeat = False
+
+    def run(self):
+        self.loop()
