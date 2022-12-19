@@ -104,7 +104,7 @@ std::pair<t_coord, int> minimize(int depth, t_board &board, int &alpha, int &bet
 }
 
 
-std::pair<std::pair<int, int>, int> minimax(int depth, t_board &board, int &alpha, int &beta, int is_max, int player)
+std::pair<t_coord, int> minimax(int depth, t_board &board, int &alpha, int &beta, int is_max, int player)
 {
     if (depth == 0)
         return static_evaluation(board);
