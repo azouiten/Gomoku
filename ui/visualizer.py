@@ -25,3 +25,10 @@ class GameSurface:
     def surface(self):
         return self._surface
 
+class Window(GameSurface):
+    """ 
+    This class represents the surface of the window
+    where every thing is drawn.
+    """
+    def __init__(self):
+        super().__init__(main_surface=True)
