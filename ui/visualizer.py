@@ -1,17 +1,17 @@
 import pygame
 
-class GameSurface:
+HEIGHT = 1000
+WIDTH  = 1600
+BOARD_COLOR = pygame.Color("#E6C475")
+
+class Surface:
     """
     This class is an abstraction of a pygame surface.
     """
-    def __init__(self, main_surface=False, dims=(1200, 800)):
-        self._width, self._height = dims
-
-        if main_surface:
-            pygame.init()
-            self._surface = pygame.display.set_mode((self.width, self.height))
-        else:
-            self._surface = pygame.Surface((self.width, self.height))
+    def __init__(self, width, height):
+        self._width = width
+        self._height = height
+        self._surface = pygame.Surface((self._width, self._height))
 
     @property
     def width(self):
@@ -25,47 +25,115 @@ class GameSurface:
     def surface(self):
         return self._surface
 
-class Window(GameSurface):
-    """ 
-    This class represents the surface of the window
-    where every thing is drawn.
+
+class State:
+    """
+    This class represents a board state read from the game logic.
     """
     def __init__(self):
-        super().__init__(main_surface=True)
+        self._state = None
 
-class Board(GameSurface):
+    @property
+    def state(self):
+        return self._state
+
+
+class Window:
     """ 
-    This class represents the surface of the board.
+    This class represents the display surface.
     """
     def __init__(self):
-        super().__init__()
+        self._width   = WIDTH
+        self._height  = HEIGHT
+        self._surface = pygame.display.set_mode((self._width, self._height))
 
-class Setup(GameSurface):
+    @property
+    def width(self):
+        return self._width
+
+    @property
+    def height(self):
+        return self._height
+
+    @property
+    def surface(self):
+        return self._surface
+
+    def blit(self, surface: Surface):
+        self._surface.blit(surface.surface, (0, 0))
+
+    def update(self):
+        pygame.display.flip()
+
+
+class Board(Surface):
     """ 
-    This class represents the surface of the setup 
-    state of the game.
+    This class represents the board surface (game board + sidebar).
+    """
+    def __init__(self, player, initial_state):
+        super().__init__(WIDTH, HEIGHT)
+        self._offset  = 25
+        self._player  = player
+        self._board   = Surface(HEIGHT - self._offset*2, HEIGHT - self._offset*2)
+        self._sidebar = Surface(WIDTH-HEIGHT, HEIGHT)
+        self._state   = initial_state
+        self._image   = pygame.image.load('./go-board.png')
+        self._image   = pygame.transform.scale(self._image, (self._board.height+5, self.board.height+5))
+
+    @property
+    def player(self):
+        return self._player
+
+    @property
+    def board(self):
+        return self._board
+
+    @property
+    def sidebar(self):
+        return self._sidebar
+        
+    def update_board(self):
+        self.board.surface.fill(pygame.Color("#E6C475"))
+        self.board.surface.blit(self._image, (-2, -2))
+        self.surface.blit(self.board.surface, (self._offset, self._offset))
+
+    def update_sidebar(self):
+        self.sidebar.surface.fill(pygame.Color("#EAE6E3"))
+        self.surface.blit(self.sidebar.surface, (self.board.width, 0))
+
+    def update(self):
+        self.update_board()
+        self.update_sidebar()
+
+
+class Setup(Surface):
+    """ 
+    This class represents the setup surface
     """
     def __init__(self):
-        super().__init__()
+        super().__init__(WIDTH, HEIGHT)
 
-class Final(GameSurface):
+
+class Final(Surface):
     """ 
     This class represents the surface of the end 
     state of the game.
     """
     def __init__(self):
-        super().__init__()
+        super().__init__(WIDTH, HEIGHT)
+
 
 class Game:
     """
     This class represents the game logic.
     """
     def __init__(self):
-        self._window = Window()
-        self._setup = Setup()
-        self._board = Board()
-        self._final = Final()
-        self.repeat = True
+        self.repeat         = True
+        self._state         = State()
+        self._window        = Window()
+        self._setup_surface = Setup()
+        self._board_surface = Board(1, self._state)
+        self._final_surface = Final()
 
 
     @property
@@ -73,22 +141,32 @@ class Game:
         return self._window
 
     @property
-    def setup(self):
-        return self._setup
+    def setup_surface(self):
+        return self._setup_surface
 
     @property
-    def board(self):
-        return self._board
+    def board_surface(self):
+        return self._board_surface
 
     @property
-    def final(self):
-        return self._final
+    def final_surface(self):
+        return self._final_surface
+
+    @property
+    def state(self):
+        return self._state
 
     def loop(self):
         while self.repeat:
+
+            # read event and update relevant informations accordingly.
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.repeat = False
+
+            self.board_surface.update()
+            self.window.blit(self.board_surface)
+            pygame.display.update()
 
     def run(self):
         self.loop()
