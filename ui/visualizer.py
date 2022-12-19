@@ -47,3 +47,12 @@ class Setup(GameSurface):
     """
     def __init__(self):
         super().__init__()
+
+class Final(GameSurface):
+    """ 
+    This class represents the surface of the end 
+    state of the game.
+    """
+    def __init__(self):
+        super().__init__()
+
