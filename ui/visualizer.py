@@ -39,3 +39,11 @@ class Board(GameSurface):
     """
     def __init__(self):
         super().__init__()
+
+class Setup(GameSurface):
+    """ 
+    This class represents the surface of the setup 
+    state of the game.
+    """
+    def __init__(self):
+        super().__init__()
