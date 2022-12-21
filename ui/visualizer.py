@@ -1,6 +1,7 @@
 import pygame
 from surface import Surface
 from button import Button
+from fonts import *
 
 
 # Setup relevant variables and informations
@@ -14,11 +15,6 @@ BLACK = pygame.Color("#000000")
 
 # Initialize pygame
 pygame.init()
-
-# Load fonts
-font_B = pygame.font.Font('./ressources/fonts/ChivoMono-Bold.ttf', 56)
-font_R = pygame.font.Font('./ressources/fonts/ChivoMono-Regular.ttf', 56)
-font_T = pygame.font.Font('./ressources/fonts/ChivoMono-Thin.ttf', 56)
 
 
 class State:
@@ -34,7 +30,7 @@ class State:
 
 
 class Window:
-    """ 
+    """
     This class represents the display surface.
     """
     def __init__(self):
@@ -129,20 +125,70 @@ class Setup(Surface):
         super().__init__(WIDTH, HEIGHT)
         self._window = window
         self.repeat = True
+        self._player_1 = Surface(600, 500)
+        self._player_2 = Surface(600, 500)
 
     @property
     def window(self):
         return self._window
 
+    @property
+    def player_1(self):
+        return self._player_1
+
+    @property
+    def player_2(self):
+        return self._player_2
+
+    def draw_box_1(self):
+        self.player_1.rect.center = (self.width / 2 - 350, self.height / 2)
+
+        header = h3_t.render('Player 1', True, pygame.Color('#000000'), pygame.Color("#ffffff"))
+        header_rect = header.get_rect()
+        header_rect.center = (self.player_1.rect.center[0] / 2, self.player_1.rect.center[1] / 2)
+        
+        self.player_1.surface.fill(WHITE)
+        self.player_1.surface.blit(header, header_rect)
+        self.surface.blit(self.player_1.surface, self.player_1.rect)
+
+    def draw_box_2(self):
+        self.player_2.rect.center = (self.width / 2 + 350, self.height / 2)
+
+        header = h3_t.render('Player 2', True, pygame.Color('#000000'), pygame.Color("#ffffff"))
+        header_rect = header.get_rect()
+        header_rect.center = (self.player_2.rect.center[0] / 2, self.player_2.rect.center[1] / 2)
+        
+        self.player_2.surface.fill(WHITE)
+        self.player_2.surface.blit(header, header_rect)
+        self.surface.blit(self.player_2.surface, self.player_2.rect)
+
     def loop(self):
         global QUIT
 
+        # Header message
+        header = h1_b.render('Gomoku', True, WHITE, BLACK)
+        header_rect = header.get_rect()
+        header_rect.center = (self.width / 2, self.height / 2 - 400)
+
+        #  message
+        middle = h3_t.render('setup Game', True, WHITE, BLACK)
+        middle_rect = middle.get_rect()
+        middle_rect.center = (self.width / 2, self.height / 2 - 300)
+
+        self.surface.fill(BLACK)
+        self.surface.blit(header, header_rect)
+        self.surface.blit(middle, middle_rect)
+
         while self.repeat:
-            for event in self.event.get():
+            for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     QUIT = True
                     self.repeat = False
                     continue
+            self.draw_box_1()
+            self.draw_box_2()
+            self.window.blit(self)
+            pygame.display.update()
 
 
 class Final(Surface):
@@ -154,8 +200,8 @@ class Final(Surface):
         super().__init__(WIDTH, HEIGHT)
         self.repeat = True
         self._window = window
-        self._winner = 0
-        self._button = Button(self.width / 2, self.height / 2 + 200, "#000000", "#ffffff", "REMATCH")
+        self._winner = 2
+        self._button = Button(self.width / 2, self.height / 2 + 200, "#000000", "#ffffff", "REMATCH", h3_t)
 
     @property
     def window(self):
@@ -177,15 +223,15 @@ class Final(Surface):
         global QUIT
 
         # Header message
-        header = font_B.render('Game Finished!', True, WHITE, BLACK)
+        header = h2_b.render('Game Finished!', True, WHITE, BLACK)
         header_rect = header.get_rect()
         header_rect.center = (self.width / 2, self.height / 2 - 100)
         
         # Mid-screen message
         if self.winner == 0:
-            middle = font_R.render('The game is a Tie', True, WHITE, BLACK)
+            middle = h3_r.render('The game is a Tie', True, WHITE, BLACK)
         else:
-            middle = font_R.render(f'Player {self.winner} is Victorious', True, WHITE, BLACK)
+            middle = h3_r.render(f'Player {self.winner} is Victorious', True, WHITE, BLACK)
         middle_rect = middle.get_rect()
         middle_rect.center = (self.width / 2, self.height / 2)
 
