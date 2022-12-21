@@ -98,7 +98,7 @@ class Button(Surface):
         self.bg = pygame.Color(self.bg_str)
         self.text = self.font.render(self.orig_text, True, pygame.Color(self.fg), pygame.Color(self.bg))
 
-    def check_clicked(self):
+    def clicked(self):
         x, y = pygame.mouse.get_pos()
         if x >= self.cx - int(self.width / 2) and x <= self.cx + int(self.width / 2):
             if y >= self.cy - int(self.height / 2) and y <= self.cy + int(self.height / 2):
