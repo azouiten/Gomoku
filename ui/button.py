@@ -1,5 +1,6 @@
 import pygame
 from surface import Surface
+from fonts import *
 
 WHITE = pygame.Color("#ffffff")
 BLACK = pygame.Color("#000000")
@@ -10,11 +11,11 @@ class Button(Surface):
     """
     __slots__ = ('_cx', '_cy', '_bg', '_fg', '_text', '_text_rect', '_hover')
 
-    def __init__(self, cx: int, cy: int, fg: str, bg: str, text: str):
+    def __init__(self, cx: int, cy: int, fg: str, bg: str, text: str, font, disabled=False):
         super().__init__(300, 80)
 
         # Load font
-        self._font = pygame.font.Font('./ressources/fonts/ChivoMono-Regular.ttf', 25)
+        self._font = font
 
         self._cx = cx
         self._cy = cy
@@ -27,6 +28,7 @@ class Button(Surface):
         self._text_rect = self.text.get_rect()
         self._text_rect.center = (self.width / 2, self.height / 2)
         self._hover = False
+        self._disabled = disabled
         self.rect.center = (self._cx, self._cy)
 
     @property
@@ -78,6 +80,21 @@ class Button(Surface):
         return self._text_rect
 
     @property
+    def disabled(self):
+        return self._disabled
+
+    @disabled.setter
+    def disabled(self, value):
+        self._disabled = value
+
+    def disable(self):
+        self.bg = pygame.Color(self.bg_str)
+        self.bg.r = self.bg.r - int(self.bg.r * 0.2)
+        self.bg.b = self.bg.b - int(self.bg.b * 0.2)
+        self.bg.g = self.bg.g - int(self.bg.g * 0.2)
+        self.text = self.font.render(self.orig_text, True, pygame.Color(self.fg), pygame.Color(self.bg))
+
+    @property
     def hover(self):
         return self._hover
 
@@ -99,15 +116,19 @@ class Button(Surface):
         self.text = self.font.render(self.orig_text, True, pygame.Color(self.fg), pygame.Color(self.bg))
 
     def clicked(self):
+        if self.disabled:
+            return False
         x, y = pygame.mouse.get_pos()
         if x >= self.cx - int(self.width / 2) and x <= self.cx + int(self.width / 2):
             if y >= self.cy - int(self.height / 2) and y <= self.cy + int(self.height / 2):
                 return True
         return False
-                
 
     def update(self):
-        self.set_hover()
+        if not self.disabled:
+            self.set_hover()
+        else:
+            self.disable()
         self.surface.fill(self.bg)
         self.surface.blit(self.text, self.text_rect)
 
