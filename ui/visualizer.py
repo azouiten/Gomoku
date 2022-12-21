@@ -154,7 +154,7 @@ class Final(Surface):
         super().__init__(WIDTH, HEIGHT)
         self.repeat = True
         self._window = window
-        self._winner = 2 # defaults to 1
+        self._winner = 0
         self._button = Button(self.width / 2, self.height / 2 + 200, "#000000", "#ffffff", "REMATCH")
 
     @property
@@ -193,15 +193,16 @@ class Final(Surface):
         self.surface.fill(BLACK)
         self.surface.blit(header, header_rect)
         self.surface.blit(middle, middle_rect)
+
         while self.repeat:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     QUIT = True
                     self.repeat = False
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    clicked = self.button.check_clicked()
-                    if clicked:
-                        return 2
+                    continue
+                elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                    if self.button.clicked():
+                        return 1
 
             self.button.update()
             self.surface.blit(self.button.surface, self.button.rect)
