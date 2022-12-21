@@ -150,8 +150,64 @@ class Final(Surface):
     This class represents the surface of the end 
     state of the game.
     """
-    def __init__(self):
+    def __init__(self, window):
         super().__init__(WIDTH, HEIGHT)
+        self.repeat = True
+        self._window = window
+        self._winner = 2 # defaults to 1
+        self._button = Button(self.width / 2, self.height / 2 + 200, "#000000", "#ffffff", "REMATCH")
+
+    @property
+    def window(self):
+        return self._window
+
+    @property
+    def winner(self):
+        return self._winner
+
+    @winner.setter
+    def winner(self, player):
+        self._winner = player
+
+    @property
+    def button(self):
+        return self._button
+
+    def loop(self):
+        global QUIT
+
+        # Header message
+        header = font_B.render('Game Finished!', True, WHITE, BLACK)
+        header_rect = header.get_rect()
+        header_rect.center = (self.width / 2, self.height / 2 - 100)
+        
+        # Mid-screen message
+        if self.winner == 0:
+            middle = font_R.render('The game is a Tie', True, WHITE, BLACK)
+        else:
+            middle = font_R.render(f'Player {self.winner} is Victorious', True, WHITE, BLACK)
+        middle_rect = middle.get_rect()
+        middle_rect.center = (self.width / 2, self.height / 2)
+
+        # Put text on the surface
+        self.surface.fill(BLACK)
+        self.surface.blit(header, header_rect)
+        self.surface.blit(middle, middle_rect)
+        while self.repeat:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    QUIT = True
+                    self.repeat = False
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    clicked = self.button.check_clicked()
+                    if clicked:
+                        return 2
+
+            self.button.update()
+            self.surface.blit(self.button.surface, self.button.rect)
+            self.window.blit(self)
+            pygame.display.update()
+            
 
 
 class Game:
