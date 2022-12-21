@@ -241,23 +241,27 @@ class Game:
         return self._final_surface
 
     @property
+    def current_surface(self):
+        return self._current_surface
+
+    @current_surface.setter
+    def current_surface(self, value):
+        self._current_surface = value
+
+    @property
     def state(self):
         return self._state
 
-    def loop(self):
-        while self.repeat:
-
-            # read event and update relevant informations accordingly.
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.repeat = False
-
-            self.board_surface.update()
-            self.window.blit(self.board_surface)
-            pygame.display.update()
-
     def run(self):
-        self.loop()
+        global QUIT
+
+        while not QUIT:
+            if self.current_surface == 1:
+                self.current_surface = self.setup_surface.loop()
+            elif self.current_surface == 2:
+                self.current_surface = self.board_surface.loop()
+            elif self.current_surface == 3:
+                self.current_surface = self.final_surface.loop()
 
 
 if __name__ == "__main__":
