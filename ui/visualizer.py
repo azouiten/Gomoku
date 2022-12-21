@@ -1,29 +1,24 @@
 import pygame
+from surface import Surface
+from button import Button
 
+
+# Setup relevant variables and informations
+QUIT = False
 HEIGHT = 1000
-WIDTH  = 1600
+WIDTH  = 1500
 BOARD_COLOR = pygame.Color("#E6C475")
+WHITE = pygame.Color("#ffffff")
+BLACK = pygame.Color("#000000")
 
-class Surface:
-    """
-    This class is an abstraction of a pygame surface.
-    """
-    def __init__(self, width, height):
-        self._width = width
-        self._height = height
-        self._surface = pygame.Surface((self._width, self._height))
 
-    @property
-    def width(self):
-        return self._width
+# Initialize pygame
+pygame.init()
 
-    @property
-    def height(self):
-        return self._height
-
-    @property
-    def surface(self):
-        return self._surface
+# Load fonts
+font_B = pygame.font.Font('./ressources/fonts/ChivoMono-Bold.ttf', 56)
+font_R = pygame.font.Font('./ressources/fonts/ChivoMono-Regular.ttf', 56)
+font_T = pygame.font.Font('./ressources/fonts/ChivoMono-Thin.ttf', 56)
 
 
 class State:
