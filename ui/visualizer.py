@@ -125,8 +125,24 @@ class Setup(Surface):
     """ 
     This class represents the setup surface
     """
-    def __init__(self):
+    def __init__(self, window):
         super().__init__(WIDTH, HEIGHT)
+        self._window = window
+        self.repeat = True
+
+    @property
+    def window(self):
+        return self._window
+
+    def loop(self):
+        global QUIT
+
+        while self.repeat:
+            for event in self.event.get():
+                if event.type == pygame.QUIT:
+                    QUIT = True
+                    self.repeat = False
+                    continue
 
 
 class Final(Surface):
