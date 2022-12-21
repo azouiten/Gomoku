@@ -218,9 +218,10 @@ class Game:
         self.repeat         = True
         self._state         = State()
         self._window        = Window()
-        self._setup_surface = Setup()
-        self._board_surface = Board(1, self._state)
-        self._final_surface = Final()
+        self._setup_surface = Setup(self._window)
+        self._board_surface = Board(self._window, 1, self._state)
+        self._final_surface = Final(self._window)
+        self._current_surface = 3
 
 
     @property
