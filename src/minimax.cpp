@@ -6,9 +6,9 @@
 #define GET_BIT(bitset, index) (bitset[18 + index])
 
 
-t_super superpose(t_board &board)
+t_superposition superpose(t_board &board)
 {
-    t_super superposition;
+    t_superposition superposition;
 
     for (t_board::iterator row = board.begin(); row != board.end(); row++)
     {

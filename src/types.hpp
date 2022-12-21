@@ -5,7 +5,7 @@
 typedef std::vector<std::pair<std::bitset<19>, std::bitset<19>> > t_board;
 
 // A vector containing the superposition of the bit masks
-typedef std::vector<int> t_super;
+typedef std::vector<int> t_superposition;
 
 // A pair representing the coordinants of a board position
 typedef std::pair<int, int> t_coord;
