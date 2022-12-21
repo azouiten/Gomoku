@@ -65,15 +65,17 @@ class Board(Surface):
     """ 
     This class represents the board surface (game board + sidebar).
     """
-    def __init__(self, player, initial_state):
+    def __init__(self, window, player, initial_state):
         super().__init__(WIDTH, HEIGHT)
-        self._offset  = 25
+        self._offset  = 50
         self._player  = player
         self._board   = Surface(HEIGHT - self._offset*2, HEIGHT - self._offset*2)
         self._sidebar = Surface(WIDTH-HEIGHT, HEIGHT)
         self._state   = initial_state
-        self._image   = pygame.image.load('./go-board.png')
+        self._image   = pygame.image.load('./ressources/images/go-board.png')
         self._image   = pygame.transform.scale(self._image, (self._board.height+5, self.board.height+5))
+        self._window  = window
+        self.repeat   = True
 
     @property
     def player(self):
@@ -86,6 +88,10 @@ class Board(Surface):
     @property
     def sidebar(self):
         return self._sidebar
+
+    @property
+    def window(self):
+        return self._window
         
     def update_board(self):
         self.board.surface.fill(pygame.Color("#E6C475"))
@@ -94,11 +100,25 @@ class Board(Surface):
 
     def update_sidebar(self):
         self.sidebar.surface.fill(pygame.Color("#EAE6E3"))
-        self.surface.blit(self.sidebar.surface, (self.board.width, 0))
+        self.surface.blit(self.sidebar.surface, (self.board.width + self._offset * 2, 0))
 
     def update(self):
         self.update_board()
         self.update_sidebar()
+        self.window.blit(self)
+        pygame.display.update()
+
+    def loop(self):
+        global QUIT
+
+        self.update()
+        while self.repeat:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    QUIT = True
+                    self.repeat = False
+                    continue
+            self.update()
 
 
 class Setup(Surface):
