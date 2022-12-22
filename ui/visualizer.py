@@ -3,6 +3,7 @@ import math
 from surface import Surface
 from button import Button
 from fonts import *
+import subprocess
 
 
 # Setup relevant variables and informations
@@ -16,6 +17,22 @@ BLACK = pygame.Color("#000000")
 
 # Initialize pygame
 pygame.init()
+
+
+class DataInterface:
+    """
+    This class represents the medium of data transfer between the visualizer
+    and the gomoku executable.
+    """
+    def __init__(self, target=):
+        self._process = subprocess.Popen(''):
+    
+    @property
+    def process(self):
+        return self._process
+
+    def create_outward_pip(self):
+        
 
 
 class State:
@@ -324,7 +341,7 @@ class Game:
         self._setup_surface = Setup(self._window)
         self._board_surface = Board(self._window, 1, self._state)
         self._final_surface = Final(self._window)
-        self._current_surface = 2
+        self._current_surface = 3
 
 
     @property
