@@ -145,10 +145,17 @@ class Board(Surface):
 
     def show_hover(self):
         x, y = pygame.mouse.get_pos()
-        color = "#000000" if self.player == 2 else "#ffffff"
-        x = self.linspace[math.floor((x-20) / self.step)] - 10
-        y = self.linspace[math.floor((y-20) / self.step)] - 10
-        pygame.draw.circle(self.board.surface, pygame.Color(color), (x, y), 20)
+        color = "#ffffff" if self.player == 1 else "#000000"
+        nx = self.linspace[math.floor((x-20) / self.step)] - 10
+        ny = self.linspace[math.floor((y-20) / self.step)] - 10
+        if math.sqrt((x-nx)**2 + (y-ny)**2) <= 25:
+            x, y = nx, ny
+        circle_surf = pygame.Surface([40, 40])
+        circle_surf.set_alpha(150)
+        circle_surf_rect = circle_surf.get_rect()
+        circle_surf_rect.center = (x, y)
+        pygame.draw.circle(circle_surf, pygame.Color(color), (20, 20), 20)
+        self.board.surface.blit(circle_surf, circle_surf_rect)
         return x, y
         
 
