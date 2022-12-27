@@ -1,18 +1,24 @@
 import pygame
 import math
 from surface import Surface
-from button import Button
+from visual_components import Button, PlayerMenu
 from fonts import *
 import subprocess
+from pygame import gfxdraw
 
-
-# Setup relevant variables and informations
+# Setup relevant variables
 QUIT = False
 HEIGHT = 1000
 WIDTH  = 1500
-BOARD_COLOR = pygame.Color("#E6C475")
+BOARD_COLOR = pygame.Color("#EAE6E3")
 WHITE = pygame.Color("#ffffff")
 BLACK = pygame.Color("#000000")
+
+
+def draw_circle(surface, x, y, radius, color):
+    gfxdraw.aacircle(surface, x, y, radius+1, BLACK)
+    gfxdraw.aacircle(surface, x, y, radius, color)
+    gfxdraw.filled_circle(surface, x, y, radius, color)
 
 
 # Initialize pygame
@@ -24,15 +30,15 @@ class DataInterface:
     This class represents the medium of data transfer between the visualizer
     and the gomoku executable.
     """
-    def __init__(self, target=):
-        self._process = subprocess.Popen(''):
+    def __init__(self, target=None):
+        self._process = subprocess.Popen('')
     
     @property
     def process(self):
         return self._process
 
     def create_outward_pip(self):
-        
+        pass
 
 
 class State:
@@ -113,15 +119,9 @@ class Board(Surface):
         return self._window
 
     def draw_board(self):
-        self.board.surface.fill(pygame.Color("#E6C475"))
+        self.board.surface.fill(BOARD_COLOR)
         for i in range(0, 19):
-            thickness = 3 if i in (0, 18) else 2 if i in (3, 9, 15) else 1
-
-            if i in (3, 9, 15):
-                for j in (3, 9, 15):
-                    x = self.offset + j * self.step + 1
-                    y = self.offset + i * self.step + 1
-                    pygame.draw.circle(self.board.surface, pygame.Color('#000000'), (x, y), 5)
+            thickness = 2 if i in (0, 3, 9, 15, 18) else 1
 
             # Draw horizontal lines
             xs = self.offset + 0
@@ -167,12 +167,7 @@ class Board(Surface):
         ny = self.linspace[math.floor((y-20) / self.step)] - 10
         if math.sqrt((x-nx)**2 + (y-ny)**2) <= 25:
             x, y = nx, ny
-        circle_surf = pygame.Surface([40, 40])
-        circle_surf.set_alpha(150)
-        circle_surf_rect = circle_surf.get_rect()
-        circle_surf_rect.center = (x, y)
-        pygame.draw.circle(circle_surf, pygame.Color(color), (20, 20), 20)
-        self.board.surface.blit(circle_surf, circle_surf_rect)
+        draw_circle(self.board.surface, x, y, 20, pygame.Color(color))
         return x, y
         
 
@@ -199,8 +194,10 @@ class Setup(Surface):
         super().__init__(WIDTH, HEIGHT)
         self._window = window
         self.repeat = True
-        self._player_1 = Surface(600, 500)
-        self._player_2 = Surface(600, 500)
+        self._player_1 = Surface(600, 600)
+        self._player_2 = Surface(600, 600)
+        self._p1_menu = PlayerMenu(self._player_1.width, self._player_1.height, 0)
+        # self._p1_type_button = Button()
 
     @property
     def window(self):
@@ -215,41 +212,43 @@ class Setup(Surface):
         return self._player_2
 
     def draw_box_1(self):
-        self.player_1.rect.center = (self.width / 2 - 350, self.height / 2)
+        self.player_1.rect.center = (self.width / 2 - 350, self.height / 2 + 100)
 
-        header = h3_t.render('Player 1', True, pygame.Color('#000000'), pygame.Color("#ffffff"))
+        header = h3_t.render('Player 1', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
-        header_rect.center = (self.player_1.rect.center[0] / 2, self.player_1.rect.center[1] / 2 - 200)
+        header_rect.center = (140, self.player_1.rect.center[1] / 2 - 250)
 
-        self.player_1.surface.fill(WHITE)
+        self.player_1.surface.fill(BOARD_COLOR)
         self.player_1.surface.blit(header, header_rect)
         self.surface.blit(self.player_1.surface, self.player_1.rect)
 
     def draw_box_2(self):
-        self.player_2.rect.center = (self.width / 2 + 350, self.height / 2)
+        self.player_2.rect.center = (self.width / 2 + 350, self.height / 2 + 100)
 
-        header = h3_t.render('Player 2', True, pygame.Color('#000000'), pygame.Color("#ffffff"))
+        header = h3_t.render('Player 2', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
-        header_rect.center = (self.player_2.rect.center[0] / 2, self.player_2.rect.center[1] / 2)
+        header_rect.center = (140, self.player_2.rect.center[1] / 2 - 250)
         
-        self.player_2.surface.fill(WHITE)
+        self.player_2.surface.fill(BOARD_COLOR)
         self.player_2.surface.blit(header, header_rect)
         self.surface.blit(self.player_2.surface, self.player_2.rect)
 
     def loop(self):
         global QUIT
 
-        # Header message
-        header = h1_b.render('Gomoku', True, WHITE, BLACK)
+        # title
+        header = h1_b.render('Gomoku', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
-        header_rect.center = (self.width / 2, self.height / 2 - 400)
+        header_rect.left = 160
+        header_rect.top = 50
 
-        #  message
-        middle = h3_t.render('setup Game', True, WHITE, BLACK)
+        # subtitle
+        middle = h3_t.render('setup Game', True, BLACK, BOARD_COLOR)
         middle_rect = middle.get_rect()
-        middle_rect.center = (self.width / 2, self.height / 2 - 300)
+        middle_rect.left = 160
+        middle_rect.top = 200
 
-        self.surface.fill(BLACK)
+        self.surface.fill(BOARD_COLOR)
         self.surface.blit(header, header_rect)
         self.surface.blit(middle, middle_rect)
 
@@ -261,6 +260,7 @@ class Setup(Surface):
                     continue
             self.draw_box_1()
             self.draw_box_2()
+            self.surface.blit(self._p1_menu.surface, self._p1_menu.get_rect())
             self.window.blit(self)
             pygame.display.update()
 
@@ -275,7 +275,7 @@ class Final(Surface):
         self.repeat = True
         self._window = window
         self._winner = 2
-        self._button = Button(self.width / 2, self.height / 2 + 200, "#000000", "#ffffff", "REMATCH", h3_t)
+        self._button = Button(self.width / 2, self.height / 2 + 200, "#000000", "#F5BB55", "REMATCH", h3_t)
 
     @property
     def window(self):
@@ -297,20 +297,20 @@ class Final(Surface):
         global QUIT
 
         # Header message
-        header = h2_b.render('Game Finished!', True, WHITE, BLACK)
+        header = h2_b.render('Game Finished!', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
         header_rect.center = (self.width / 2, self.height / 2 - 100)
         
         # Mid-screen message
         if self.winner == 0:
-            middle = h3_r.render('The game is a Tie', True, WHITE, BLACK)
+            middle = h3_r.render('The game is a Tie', True, BLACK, BOARD_COLOR)
         else:
-            middle = h3_r.render(f'Player {self.winner} is Victorious', True, WHITE, BLACK)
+            middle = h3_r.render(f'Player {self.winner} is Victorious', True, BLACK, BOARD_COLOR)
         middle_rect = middle.get_rect()
         middle_rect.center = (self.width / 2, self.height / 2)
 
         # Put text on the surface
-        self.surface.fill(BLACK)
+        self.surface.fill(BOARD_COLOR)
         self.surface.blit(header, header_rect)
         self.surface.blit(middle, middle_rect)
 

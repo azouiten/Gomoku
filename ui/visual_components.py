@@ -11,7 +11,7 @@ class Button(Surface):
     """
     __slots__ = ('_cx', '_cy', '_bg', '_fg', '_text', '_text_rect', '_hover')
 
-    def __init__(self, cx: int, cy: int, fg: str, bg: str, text: str, font, disabled=False):
+    def __init__(self, cx: int, cy: int, fg: str, bg: str, text: str, font, disabled=False, interactive=True):
         super().__init__(300, 80)
 
         # Load font
@@ -21,6 +21,10 @@ class Button(Surface):
         self._cy = cy
         self._bg = pygame.Color(bg)
         self._fg = pygame.Color(fg)
+        self._bg_hov = pygame.Color(bg)
+        self._bg_hov.r = self.bg.r - 30 if self.bg.r >= 30 else self.bg.r
+        self._bg_hov.b = self.bg.b - 30 if self.bg.b >= 30 else self.bg.b
+        self._bg_hov.g = self.bg.g - 30 if self.bg.b >= 30 else self.bg.b
         self._bg_str = bg
         self._fg_str = fg
         self._orig_text = text
@@ -30,6 +34,8 @@ class Button(Surface):
         self._hover = False
         self._disabled = disabled
         self.rect.center = (self._cx, self._cy)
+        self._interactive = interactive
+        self._pressed = False
 
     @property
     def cx(self):
@@ -88,10 +94,7 @@ class Button(Surface):
         self._disabled = value
 
     def disable(self):
-        self.bg = pygame.Color(self.bg_str)
-        self.bg.r = self.bg.r - int(self.bg.r * 0.2)
-        self.bg.b = self.bg.b - int(self.bg.b * 0.2)
-        self.bg.g = self.bg.g - int(self.bg.g * 0.2)
+        self.bg = self._bg_hov
         self.text = self.font.render(self.orig_text, True, pygame.Color(self.fg), pygame.Color(self.bg))
 
     @property
@@ -102,14 +105,23 @@ class Button(Surface):
     def hover(self, value):
         self._hover = value
 
+    @property
+    def pressed(self):
+        return self._pressed
+
+    @pressed.setter
+    def pressed(self, value):
+        self._pressed = value
+
+    @property
+    def interactive(self):
+        return self._interactive
+
     def set_hover(self):
         x, y = pygame.mouse.get_pos()
         if x >= self.cx - int(self.width / 2) and x <= self.cx + int(self.width / 2):
             if y >= self.cy - int(self.height / 2) and y <= self.cy + int(self.height / 2):
-                self.bg = pygame.Color(self.bg_str)
-                self.bg.r = self.bg.r - int(self.bg.r * 0.2)
-                self.bg.b = self.bg.b - int(self.bg.b * 0.2)
-                self.bg.g = self.bg.g - int(self.bg.g * 0.2)
+                self.bg = self._bg_hov
                 self.text = self.font.render(self.orig_text, True, pygame.Color(self.fg), pygame.Color(self.bg))
                 return 
         self.bg = pygame.Color(self.bg_str)
@@ -121,6 +133,9 @@ class Button(Surface):
         x, y = pygame.mouse.get_pos()
         if x >= self.cx - int(self.width / 2) and x <= self.cx + int(self.width / 2):
             if y >= self.cy - int(self.height / 2) and y <= self.cy + int(self.height / 2):
+                if self.interactive:
+                    self.bg = pygame.Color(self.bg_str) if self.pressed else self._bg_hov
+                self.pressed = not self.pressed
                 return True
         return False
 
@@ -132,4 +147,34 @@ class Button(Surface):
         self.surface.fill(self.bg)
         self.surface.blit(self.text, self.text_rect)
 
-        
+
+class PlayerMenu(Surface):
+    """
+    This class represents a drop down menu
+    """
+
+    # Player type
+    HUMAN = 0
+    BOT = 1
+
+    # Bot accuracy
+    LBOSS = 0
+    KAYL3AB = 1
+    MKALAKH = 2
+
+    def __init__(self, width, height, player_type=0):
+        self._player = player_type
+        self._selected = self._player
+        self._depth = PlayerMenu.MKALAKH
+        self._human_button = Button(30, 30, "#EAE6E3", "#000000", "Human", h3_t, False, False)
+        # self._bot_button   = Button(self.width / 2, self.height / 2 + 200, "#EAE6E3", "#000000", "Bot", h3_t)
+        # self._type_surface = Surface(width, 100)
+
+        super().__init__(width, height)
+
+    @property
+    def type_surface(self):
+        return self._type_surface
+
+    def update(self):
+        self.surface.blit(self._human_button)
