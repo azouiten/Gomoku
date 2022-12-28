@@ -196,8 +196,8 @@ class Setup(Surface):
         self.repeat = True
         self._player_1 = Surface(600, 600)
         self._player_2 = Surface(600, 600)
-        self._p1_menu = PlayerMenu(self._player_1.width, self._player_1.height, 0)
-        # self._p1_type_button = Button()
+        self._p1_menu = PlayerMenu(600, 500, 0)
+        self._p2_menu = PlayerMenu(600, 500, 0)
 
     @property
     def window(self):
@@ -211,6 +211,14 @@ class Setup(Surface):
     def player_2(self):
         return self._player_2
 
+    @property
+    def p1_menu(self):
+        return self._p1_menu
+
+    @property
+    def p2_menu(self):
+        return self._p2_menu
+
     def draw_box_1(self):
         self.player_1.rect.center = (self.width / 2 - 350, self.height / 2 + 100)
 
@@ -218,8 +226,13 @@ class Setup(Surface):
         header_rect = header.get_rect()
         header_rect.center = (140, self.player_1.rect.center[1] / 2 - 250)
 
+        menu_rect = self.p1_menu.rect
+        menu_rect.top = 100
+
         self.player_1.surface.fill(BOARD_COLOR)
         self.player_1.surface.blit(header, header_rect)
+        self.p1_menu.update()
+        self.player_1.surface.blit(self.p1_menu.surface, menu_rect)
         self.surface.blit(self.player_1.surface, self.player_1.rect)
 
     def draw_box_2(self):
@@ -228,9 +241,14 @@ class Setup(Surface):
         header = h3_t.render('Player 2', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
         header_rect.center = (140, self.player_2.rect.center[1] / 2 - 250)
-        
+
+        menu_rect = self.p2_menu.rect
+        menu_rect.top = 100
+
+        self.p2_menu.update()
         self.player_2.surface.fill(BOARD_COLOR)
         self.player_2.surface.blit(header, header_rect)
+        self.player_2.surface.blit(self.p2_menu.surface, menu_rect)
         self.surface.blit(self.player_2.surface, self.player_2.rect)
 
     def loop(self):
@@ -260,7 +278,6 @@ class Setup(Surface):
                     continue
             self.draw_box_1()
             self.draw_box_2()
-            self.surface.blit(self._p1_menu.surface, self._p1_menu.get_rect())
             self.window.blit(self)
             pygame.display.update()
 
@@ -341,7 +358,7 @@ class Game:
         self._setup_surface = Setup(self._window)
         self._board_surface = Board(self._window, 1, self._state)
         self._final_surface = Final(self._window)
-        self._current_surface = 3
+        self._current_surface = 1
 
 
     @property

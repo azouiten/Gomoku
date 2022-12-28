@@ -2,6 +2,7 @@ import pygame
 from surface import Surface
 from fonts import *
 
+BOARD_COLOR = pygame.Color("#EAE6E3")
 WHITE = pygame.Color("#ffffff")
 BLACK = pygame.Color("#000000")
 
@@ -9,33 +10,39 @@ class Button(Surface):
     """
     Class representing an interactive button object
     """
-    __slots__ = ('_cx', '_cy', '_bg', '_fg', '_text', '_text_rect', '_hover')
-
     def __init__(self, cx: int, cy: int, fg: str, bg: str, text: str, font, disabled=False, interactive=True):
-        super().__init__(300, 80)
 
         # Load font
         self._font = font
 
-        self._cx = cx
-        self._cy = cy
+        self._bg_str = bg
+        self._fg_str = fg
         self._bg = pygame.Color(bg)
         self._fg = pygame.Color(fg)
         self._bg_hov = pygame.Color(bg)
         self._bg_hov.r = self.bg.r - 30 if self.bg.r >= 30 else self.bg.r
         self._bg_hov.b = self.bg.b - 30 if self.bg.b >= 30 else self.bg.b
         self._bg_hov.g = self.bg.g - 30 if self.bg.b >= 30 else self.bg.b
-        self._bg_str = bg
-        self._fg_str = fg
+
+        self._cx = cx
+        self._cy = cy
+
         self._orig_text = text
         self._text = self.font.render(text, True, pygame.Color(self.fg), pygame.Color(self.bg))
+
+        self.surf_width = self.text.get_width()
+        self.surf_height = self.text.get_height()
+
+        super().__init__(self.surf_width + 100, self.surf_height + 50)
+        self.rect.center = (self._cx, self._cy)
         self._text_rect = self.text.get_rect()
-        self._text_rect.center = (self.width / 2, self.height / 2)
+        self._text_rect.center = self.rect.center
+
         self._hover = False
         self._disabled = disabled
-        self.rect.center = (self._cx, self._cy)
         self._interactive = interactive
         self._pressed = False
+
 
     @property
     def cx(self):
@@ -121,7 +128,7 @@ class Button(Surface):
         x, y = pygame.mouse.get_pos()
         if x >= self.cx - int(self.width / 2) and x <= self.cx + int(self.width / 2):
             if y >= self.cy - int(self.height / 2) and y <= self.cy + int(self.height / 2):
-                self.bg = self._bg_hov
+                self.bg = pygame.Color(self.bg_str) if self.pressed else self._bg_hov
                 self.text = self.font.render(self.orig_text, True, pygame.Color(self.fg), pygame.Color(self.bg))
                 return 
         self.bg = pygame.Color(self.bg_str)
@@ -135,7 +142,7 @@ class Button(Surface):
             if y >= self.cy - int(self.height / 2) and y <= self.cy + int(self.height / 2):
                 if self.interactive:
                     self.bg = pygame.Color(self.bg_str) if self.pressed else self._bg_hov
-                self.pressed = not self.pressed
+                    self.pressed = not self.pressed
                 return True
         return False
 
@@ -163,18 +170,25 @@ class PlayerMenu(Surface):
     MKALAKH = 2
 
     def __init__(self, width, height, player_type=0):
+        super().__init__(width, height)
+
         self._player = player_type
         self._selected = self._player
         self._depth = PlayerMenu.MKALAKH
-        self._human_button = Button(30, 30, "#EAE6E3", "#000000", "Human", h3_t, False, False)
+        self._human_button = Button(self.rect.left+200, self.rect.top+50, "#000000", "#F5BB55", "Human", h3_t, False, True)
         # self._bot_button   = Button(self.width / 2, self.height / 2 + 200, "#EAE6E3", "#000000", "Bot", h3_t)
         # self._type_surface = Surface(width, 100)
 
-        super().__init__(width, height)
 
     @property
     def type_surface(self):
         return self._type_surface
 
+    @property
+    def human_button(self):
+        return self._human_button
+
     def update(self):
-        self.surface.blit(self._human_button)
+        self.surface.fill(BOARD_COLOR)
+        self.human_button.update()
+        self.surface.blit(self._human_button.surface, self._human_button.rect)
