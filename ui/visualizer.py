@@ -1,7 +1,7 @@
 import pygame
 import math
 from surface import Surface
-from visual_components import Button, PlayerMenu
+from visual_components import Button, CheckBox, CheckBoxs
 from fonts import *
 import subprocess
 from pygame import gfxdraw
@@ -86,10 +86,10 @@ class Board(Surface):
     This class represents the board surface (game board + sidebar).
     """
     def __init__(self, window, player, initial_state):
-        super().__init__(WIDTH, HEIGHT)
+        super().__init__(WIDTH, HEIGHT, (0, 0))
         self._player  = player
-        self._board   = Surface(HEIGHT, HEIGHT)
-        self._sidebar = Surface(WIDTH-HEIGHT, HEIGHT)
+        self._board   = Surface(HEIGHT, HEIGHT, None)
+        self._sidebar = Surface(WIDTH-HEIGHT, HEIGHT, None)
         self._state   = initial_state
         self._window  = window
         self.repeat   = True
@@ -191,65 +191,57 @@ class Setup(Surface):
     This class represents the setup surface
     """
     def __init__(self, window):
-        super().__init__(WIDTH, HEIGHT)
+        super().__init__(WIDTH, HEIGHT, (0, 0))
         self._window = window
         self.repeat = True
-        self._player_1 = Surface(600, 600)
-        self._player_2 = Surface(600, 600)
-        self._p1_menu = PlayerMenu(600, 500, 0)
-        self._p2_menu = PlayerMenu(600, 500, 0)
-
+        self._p1_surf = Surface(600, 600, (400, 200))
+        # self._p2_surf = Surface(600, 600, (400, 900))
+        self._p1_cb = CheckBoxs(
+            self._p1_surf.position, 
+            {1: 'Computer', 2: 'Human'}
+        )
+        # self._p2_cb = CheckBoxs((self.surface.top, self.surface.left), {1: 'Human', 2: 'Computer'})
+        
     @property
     def window(self):
         return self._window
 
     @property
-    def player_1(self):
-        return self._player_1
+    def p1_surf(self):
+        return self._p1_surf
+
+    # @property
+    # def p2_surf(self):
+    #     return self._p2_surf
 
     @property
-    def player_2(self):
-        return self._player_2
-
-    @property
-    def p1_menu(self):
-        return self._p1_menu
-
-    @property
-    def p2_menu(self):
-        return self._p2_menu
+    def p1_cb(self):
+        return self._p1_cb
 
     def draw_box_1(self):
-        self.player_1.rect.center = (self.width / 2 - 350, self.height / 2 + 100)
+        self.p1_surf.rect.center = (self.width / 2 - 350, self.height / 2 + 100)
 
         header = h3_t.render('Player 1', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
-        header_rect.center = (140, self.player_1.rect.center[1] / 2 - 250)
+        header_rect.center = (140, self.p1_surf.rect.center[1] / 2 - 250)
 
-        menu_rect = self.p1_menu.rect
-        menu_rect.top = 100
+        self.p1_surf.surface.fill(WHITE)
+        self.p1_surf.surface.blit(header, header_rect)
 
-        self.player_1.surface.fill(BOARD_COLOR)
-        self.player_1.surface.blit(header, header_rect)
-        self.p1_menu.update()
-        self.player_1.surface.blit(self.p1_menu.surface, menu_rect)
-        self.surface.blit(self.player_1.surface, self.player_1.rect)
+        self.p1_cb.update()
+        self.p1_surf.surface.blit(self.p1_cb.surface, self.p1_cb.rect)
+        self.surface.blit(self.p1_surf.surface, self.p1_surf.rect)
 
-    def draw_box_2(self):
-        self.player_2.rect.center = (self.width / 2 + 350, self.height / 2 + 100)
+    # def draw_box_2(self):
+    #     self.p2_surf.rect.center = (self.width / 2 + 350, self.height / 2 + 100)
 
-        header = h3_t.render('Player 2', True, BLACK, BOARD_COLOR)
-        header_rect = header.get_rect()
-        header_rect.center = (140, self.player_2.rect.center[1] / 2 - 250)
+    #     header = h3_t.render('Player 2', True, BLACK, BOARD_COLOR)
+    #     header_rect = header.get_rect()
+    #     header_rect.center = (140, self.p2_surf.rect.center[1] / 2 - 250)
 
-        menu_rect = self.p2_menu.rect
-        menu_rect.top = 100
-
-        self.p2_menu.update()
-        self.player_2.surface.fill(BOARD_COLOR)
-        self.player_2.surface.blit(header, header_rect)
-        self.player_2.surface.blit(self.p2_menu.surface, menu_rect)
-        self.surface.blit(self.player_2.surface, self.player_2.rect)
+    #     self.p2_surf.surface.fill(BOARD_COLOR)
+    #     self.p2_surf.surface.blit(header, header_rect)
+    #     self.surface.blit(self.p2_surf.surface, self.p2_surf.rect)
 
     def loop(self):
         global QUIT
@@ -276,8 +268,10 @@ class Setup(Surface):
                     QUIT = True
                     self.repeat = False
                     continue
+                # if event.type == pygame.MOUSEBUTTONUP:
+
             self.draw_box_1()
-            self.draw_box_2()
+            # self.draw_box_2()
             self.window.blit(self)
             pygame.display.update()
 
@@ -288,7 +282,7 @@ class Final(Surface):
     state of the game.
     """
     def __init__(self, window):
-        super().__init__(WIDTH, HEIGHT)
+        super().__init__(WIDTH, HEIGHT, (0, 0))
         self.repeat = True
         self._window = window
         self._winner = 2
@@ -358,7 +352,7 @@ class Game:
         self._setup_surface = Setup(self._window)
         self._board_surface = Board(self._window, 1, self._state)
         self._final_surface = Final(self._window)
-        self._current_surface = 1
+        self._current_surface = 3
 
 
     @property

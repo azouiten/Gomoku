@@ -5,12 +5,13 @@ from fonts import *
 BOARD_COLOR = pygame.Color("#EAE6E3")
 WHITE = pygame.Color("#ffffff")
 BLACK = pygame.Color("#000000")
+BLUE = pygame.Color("#0000ff")
 
 class Button(Surface):
     """
     Class representing an interactive button object
     """
-    def __init__(self, cx: int, cy: int, fg: str, bg: str, text: str, font, position, disabled=False, interactive=True):
+    def __init__(self, cx: int, cy: int, fg: str, bg: str, text: str, font, disabled=False, interactive=True):
 
         # Load font
         self._font = font
@@ -22,7 +23,7 @@ class Button(Surface):
         self._bg_hov = pygame.Color(bg)
         self._bg_hov.r = self.bg.r - 30 if self.bg.r >= 30 else self.bg.r
         self._bg_hov.b = self.bg.b - 30 if self.bg.b >= 30 else self.bg.b
-        self._bg_hov.g = self.bg.g - 30 if self.bg.b >= 30 else self.bg.b
+        self._bg_hov.g = self.bg.g - 30 if self.bg.g >= 30 else self.bg.g
 
         self._cx = cx
         self._cy = cy
@@ -33,10 +34,10 @@ class Button(Surface):
         self.surf_width = self.text.get_width()
         self.surf_height = self.text.get_height()
 
-        super().__init__(self.surf_width + 100, self.surf_height + 50)
+        super().__init__(self.surf_width + 100, self.surf_height + 50, None)
         self.rect.center = (self._cx, self._cy)
         self._text_rect = self.text.get_rect()
-        self._text_rect.center = self.rect.center
+        self._text_rect.center = (int(self.width / 2), int(self.height / 2))
 
         self._hover = False
         self._disabled = disabled
@@ -155,63 +156,27 @@ class Button(Surface):
         self.surface.blit(self.text, self.text_rect)
 
 
-class PlayerMenu(Surface):
-    """
-    This class represents a drop down menu
-    """
-
-    # Player type
-    HUMAN = 0
-    BOT = 1
-
-    # Bot accuracy
-    LBOSS = 0
-    KAYL3AB = 1
-    MKALAKH = 2
-
-    def __init__(self, width, height, player_type=0):
-        super().__init__(width, height)
-
-        self._player = player_type
-        self._selected = self._player
-        self._depth = PlayerMenu.MKALAKH
-        self._human_button = Button(self.rect.left+200, self.rect.top+50, "#000000", "#F5BB55", "Human", h3_t, False, True)
-        # self._bot_button   = Button(self.width / 2, self.height / 2 + 200, "#EAE6E3", "#000000", "Bot", h3_t)
-        # self._type_surface = Surface(width, 100)
-
-
-    @property
-    def type_surface(self):
-        return self._type_surface
-
-    @property
-    def human_button(self):
-        return self._human_button
-
-    def update(self):
-        self.surface.fill(BOARD_COLOR)
-        self.human_button.update()
-        self.surface.blit(self._human_button.surface, self._human_button.rect)
-
-
 class CheckBoxs(Surface):
 
-    def __init__(self, position, **kwargs):
+    def __init__(self, position, pairs):
         self._container = []
-        offset = 0
-        for key in kwargs.keys():
-            new_position = (position[0], position[1] + offset)
-            self._container.append(CheckBox(kwargs[key], key, new_position))
-            offset += 40
 
+        # Create instances of CheckBox and set containers' max height accordingly
+        offset = 0
+        for key in pairs.keys():
+            new_position = (position[0] + offset + 1, position[1])
+            self._container.append(CheckBox(pairs[key], key, offset, new_position))
+            offset = offset + self._container[-1].height + 1
+
+        # Set max width of the container
         total_width = 0
-        total_height = 0
         for checkbox in self._container:
             total_width = checkbox.width if checkbox.width > total_width else total_width
-            total_height += checkbox.height
+
+        # Anchor to first element of container list or set to None
         self._anchor = self._container[0] if self._container else None
 
-        super().__init__(total_width, total_height, position)
+        super().__init__(total_width, offset, position)
 
     @property
     def container(self):
@@ -225,18 +190,31 @@ class CheckBoxs(Surface):
     def anchor(self, value):
         self._anchor = value
 
+    def check_hover(self):
+        x, y = pygame.mouse.get_pos()
+        print(x, self.position[1], y, self.position[0])
+        if x >= self.position[1] - self.width and x <= self.position[1]:
+            if y >= self.position[0] - self.height and y <= self.position[0]:
+                self.surface.fill(BLUE)
+                return
+        self.surface.fill(BOARD_COLOR)
+
     def update(self):
+        # self.surface.fill(BOARD_COLOR)
+        self.check_hover()
         for checkbox in self.container:
             checkbox.update()
+            self.surface.blit(checkbox.surface, checkbox.rect)
+        
 
 
 class CheckBox(Surface):
-    __slots__ = ('_label', '_box', '_filler', '_checked', '_label_rect')
+    __slots__ = ('_label', '_box', '_filler', '_checked', '_label_rect', '_hovered')
 
-    def __init__(self, label, position):
+    def __init__(self, label, value, offset, position):
         self._label = h3_r.render(label, True, BLACK, BOARD_COLOR)
-        self._box = Surface(40, 40)
-        self._filler = Surface(30, 30)
+        self._box = Surface(40, 40, None)
+        self._filler = Surface(30, 30, None)
         self._filler.surface.fill(WHITE)
         self._checked = False
         self._hovered = False
@@ -253,6 +231,7 @@ class CheckBox(Surface):
             50 if self._label.get_height() < 50 else self._label.get_height(), 
             position
             )
+        self.rect.top += offset
 
     @property
     def label(self):
@@ -274,6 +253,17 @@ class CheckBox(Surface):
     def checked(self):
         return self._checked
 
+    def check_hover(self):
+        x, y = pygame.mouse.get_pos()
+        if x >= self.position[1] - self.width and x <= self.position[1]:
+            if y >= self.position[0] - self.height and y <= self.position[0]:
+                self.hovered = True
+            else:
+                self.hovered = False
+        else:
+            self.hovered = False
+        return self.hovered
+
     @property
     def hovered(self):
         return self._hovered
@@ -289,6 +279,7 @@ class CheckBox(Surface):
     def update(self):
         self.surface.fill(BOARD_COLOR)
         self.surface.blit(self.box.surface, self.box.rect)
+        self.check_hover()
         if self.checked or self.hovered:
             self.surface.blit(self.filler.surface, self.filler.rect)
         self.surface.blit(self.label, self._label_rect)
