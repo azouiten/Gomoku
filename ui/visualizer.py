@@ -8,8 +8,8 @@ from pygame import gfxdraw
 
 # Setup relevant variables
 QUIT = False
-HEIGHT = 1000
-WIDTH  = 1500
+HEIGHT = 800
+WIDTH  = 1400
 BOARD_COLOR = pygame.Color("#EAE6E3")
 WHITE = pygame.Color("#ffffff")
 BLACK = pygame.Color("#000000")
@@ -94,7 +94,7 @@ class Board(Surface):
         self._window  = window
         self.repeat   = True
         self.offset   = 40
-        self.limit    = self.board.height - self.offset * 2 - 1
+        self.limit    = self.board.height - self.offset * 2 - 18
         self.step     = int(self.limit / 18)
         self.linspace = [i+self.step for i in range(0, self.board.width - self.offset, self.step)]
 
@@ -119,7 +119,11 @@ class Board(Surface):
         return self._window
 
     def draw_board(self):
-        self.board.surface.fill(BOARD_COLOR)
+        if self.check_hover():
+            BLUE = pygame.Color("#0000ff")
+            self.board.surface.fill(BLUE)
+        else:
+            self.board.surface.fill(BOARD_COLOR)
         for i in range(0, 19):
             thickness = 2 if i in (0, 3, 9, 15, 18) else 1
 
@@ -155,21 +159,20 @@ class Board(Surface):
 
     def check_hover(self):
         x, y = pygame.mouse.get_pos()
-        if x >= self.offset and x <= self.board.height - self.offset:
-            if y >= self.offset and y <= self.board.height - self.offset:
+        if x >= self.offset and x <= self.limit + self.offset:
+            if y >= self.offset and y <= self.limit + self.offset:
                 return True
         return False
 
     def show_hover(self):
         x, y = pygame.mouse.get_pos()
         color = "#ffffff" if self.player == 1 else "#000000"
-        nx = self.linspace[math.floor((x-20) / self.step)] - 10
-        ny = self.linspace[math.floor((y-20) / self.step)] - 10
+        nx = self.linspace[math.floor((x-20) / self.step)]
+        ny = self.linspace[math.floor((y-20) / self.step)]
         if math.sqrt((x-nx)**2 + (y-ny)**2) <= 25:
             x, y = nx, ny
-        draw_circle(self.board.surface, x, y, 20, pygame.Color(color))
+        draw_circle(self.board.surface, x, y, 18, pygame.Color(color))
         return x, y
-        
 
     def loop(self):
         global QUIT
@@ -194,13 +197,15 @@ class Setup(Surface):
         super().__init__(WIDTH, HEIGHT, (0, 0))
         self._window = window
         self.repeat = True
-        self._p1_surf = Surface(600, 600, (400, 200))
-        # self._p2_surf = Surface(600, 600, (400, 900))
+
+        self._p1_surf = Surface(600, 600, (150, 100))
+        self._p1_surf.rect.top = 150
+        self._p1_surf.rect.left = 100
+
         self._p1_cb = CheckBoxs(
             self._p1_surf.position, 
             {1: 'Computer', 2: 'Human'}
         )
-        # self._p2_cb = CheckBoxs((self.surface.top, self.surface.left), {1: 'Human', 2: 'Computer'})
         
     @property
     def window(self):
@@ -219,47 +224,26 @@ class Setup(Surface):
         return self._p1_cb
 
     def draw_box_1(self):
-        self.p1_surf.rect.center = (self.width / 2 - 350, self.height / 2 + 100)
-
         header = h3_t.render('Player 1', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
         header_rect.center = (140, self.p1_surf.rect.center[1] / 2 - 250)
 
-        self.p1_surf.surface.fill(WHITE)
+        self.p1_surf.surface.fill(BOARD_COLOR)
         self.p1_surf.surface.blit(header, header_rect)
 
         self.p1_cb.update()
         self.p1_surf.surface.blit(self.p1_cb.surface, self.p1_cb.rect)
         self.surface.blit(self.p1_surf.surface, self.p1_surf.rect)
 
-    # def draw_box_2(self):
-    #     self.p2_surf.rect.center = (self.width / 2 + 350, self.height / 2 + 100)
-
-    #     header = h3_t.render('Player 2', True, BLACK, BOARD_COLOR)
-    #     header_rect = header.get_rect()
-    #     header_rect.center = (140, self.p2_surf.rect.center[1] / 2 - 250)
-
-    #     self.p2_surf.surface.fill(BOARD_COLOR)
-    #     self.p2_surf.surface.blit(header, header_rect)
-    #     self.surface.blit(self.p2_surf.surface, self.p2_surf.rect)
-
     def loop(self):
         global QUIT
 
-        # title
-        header = h1_b.render('Gomoku', True, BLACK, BOARD_COLOR)
-        header_rect = header.get_rect()
-        header_rect.left = 160
-        header_rect.top = 50
-
         # subtitle
-        middle = h3_t.render('setup Game', True, BLACK, BOARD_COLOR)
+        middle = h2_t.render('Game Setup', True, BLACK, BOARD_COLOR)
         middle_rect = middle.get_rect()
-        middle_rect.left = 160
-        middle_rect.top = 200
+        middle_rect.center = (self.width / 2, 70)
 
         self.surface.fill(BOARD_COLOR)
-        self.surface.blit(header, header_rect)
         self.surface.blit(middle, middle_rect)
 
         while self.repeat:
@@ -268,10 +252,11 @@ class Setup(Surface):
                     QUIT = True
                     self.repeat = False
                     continue
-                # if event.type == pygame.MOUSEBUTTONUP:
+                if event.type == pygame.MOUSEBUTTONUP:
+                    for box in self.p1_cb.container:
+                        box.check_clicked()
 
             self.draw_box_1()
-            # self.draw_box_2()
             self.window.blit(self)
             pygame.display.update()
 
@@ -352,7 +337,7 @@ class Game:
         self._setup_surface = Setup(self._window)
         self._board_surface = Board(self._window, 1, self._state)
         self._final_surface = Final(self._window)
-        self._current_surface = 3
+        self._current_surface = 2
 
 
     @property

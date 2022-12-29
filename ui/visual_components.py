@@ -164,7 +164,7 @@ class CheckBoxs(Surface):
         # Create instances of CheckBox and set containers' max height accordingly
         offset = 0
         for key in pairs.keys():
-            new_position = (position[0] + offset + 1, position[1])
+            new_position = (position[0] + offset + 1 + 100, position[1])
             self._container.append(CheckBox(pairs[key], key, offset, new_position))
             offset = offset + self._container[-1].height + 1
 
@@ -176,7 +176,8 @@ class CheckBoxs(Surface):
         # Anchor to first element of container list or set to None
         self._anchor = self._container[0] if self._container else None
 
-        super().__init__(total_width, offset, position)
+        super().__init__(total_width, offset, (position[0]+100, position[1]))
+        self.rect.top += 100
 
     @property
     def container(self):
@@ -190,41 +191,36 @@ class CheckBoxs(Surface):
     def anchor(self, value):
         self._anchor = value
 
-    def check_hover(self):
-        x, y = pygame.mouse.get_pos()
-        print(x, self.position[1], y, self.position[0])
-        if x >= self.position[1] - self.width and x <= self.position[1]:
-            if y >= self.position[0] - self.height and y <= self.position[0]:
-                self.surface.fill(BLUE)
-                return
-        self.surface.fill(BOARD_COLOR)
-
     def update(self):
-        # self.surface.fill(BOARD_COLOR)
-        self.check_hover()
-        for checkbox in self.container:
-            checkbox.update()
-            self.surface.blit(checkbox.surface, checkbox.rect)
+        self.surface.fill(BOARD_COLOR)
+        for box in self.container:
+            box.update()
+            if box.checked:
+                self.anchor = box
+            self.surface.blit(box.surface, box.rect)
         
 
-
 class CheckBox(Surface):
-    __slots__ = ('_label', '_box', '_filler', '_checked', '_label_rect', '_hovered')
+    __slots__ = ('_label', '_box', '_value', '_filler', '_checked', '_label_rect', '_hovered')
 
     def __init__(self, label, value, offset, position):
-        self._label = h3_r.render(label, True, BLACK, BOARD_COLOR)
-        self._box = Surface(40, 40, None)
-        self._filler = Surface(30, 30, None)
-        self._filler.surface.fill(WHITE)
-        self._checked = False
-        self._hovered = False
-
+        self._label = h3_t.render(label, True, BLACK, BOARD_COLOR)
         self._label_rect = self.label.get_rect()
         self._label_rect.top = 5
         self._label_rect.left = 70
+
+        self._value = value
+
+        self._box = Surface(40, 40, None)
         self._box.rect.top = 5
+
+        self._filler = Surface(30, 30, None)
+        self._filler.surface.fill(WHITE)
         self._filler.rect.top = 10
         self._filler.rect.left = 5
+
+        self._checked = False
+        self._hovered = False
 
         super().__init__(
             self._label.get_width() + 70, 
@@ -242,6 +238,10 @@ class CheckBox(Surface):
         return self._label_rect
 
     @property
+    def value(self):
+        return self._value
+
+    @property
     def box(self):
         return self._box
 
@@ -255,8 +255,8 @@ class CheckBox(Surface):
 
     def check_hover(self):
         x, y = pygame.mouse.get_pos()
-        if x >= self.position[1] - self.width and x <= self.position[1]:
-            if y >= self.position[0] - self.height and y <= self.position[0]:
+        if x >= self.position[1] and x <= self.position[1] + self.width:
+            if y >= self.position[0] and y <= self.position[0] + self.height:
                 self.hovered = True
             else:
                 self.hovered = False
@@ -276,10 +276,18 @@ class CheckBox(Surface):
     def checked(self, value):
         self._checked = value
 
+    def check_clicked(self):
+        x, y = pygame.mouse.get_pos()
+        if x >= self.position[1] and x <= self.position[1] + self.width:
+            if y >= self.position[0] and y <= self.position[0] + self.height:
+                self.checked = True
+            else:
+                self.checked = False
+
     def update(self):
         self.surface.fill(BOARD_COLOR)
         self.surface.blit(self.box.surface, self.box.rect)
-        self.check_hover()
+        # self.check_hover()
         if self.checked or self.hovered:
             self.surface.blit(self.filler.surface, self.filler.rect)
         self.surface.blit(self.label, self._label_rect)
