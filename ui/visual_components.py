@@ -10,7 +10,7 @@ class Button(Surface):
     """
     Class representing an interactive button object
     """
-    def __init__(self, cx: int, cy: int, fg: str, bg: str, text: str, font, disabled=False, interactive=True):
+    def __init__(self, cx: int, cy: int, fg: str, bg: str, text: str, font, position, disabled=False, interactive=True):
 
         # Load font
         self._font = font
