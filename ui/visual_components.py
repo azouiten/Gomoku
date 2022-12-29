@@ -192,3 +192,103 @@ class PlayerMenu(Surface):
         self.surface.fill(BOARD_COLOR)
         self.human_button.update()
         self.surface.blit(self._human_button.surface, self._human_button.rect)
+
+
+class CheckBoxs(Surface):
+
+    def __init__(self, position, **kwargs):
+        self._container = []
+        offset = 0
+        for key in kwargs.keys():
+            new_position = (position[0], position[1] + offset)
+            self._container.append(CheckBox(kwargs[key], key, new_position))
+            offset += 40
+
+        total_width = 0
+        total_height = 0
+        for checkbox in self._container:
+            total_width = checkbox.width if checkbox.width > total_width else total_width
+            total_height += checkbox.height
+        self._anchor = self._container[0] if self._container else None
+
+        super().__init__(total_width, total_height, position)
+
+    @property
+    def container(self):
+        return self._container
+
+    @property
+    def anchor(self):
+        return self._anchor
+
+    @anchor.setter
+    def anchor(self, value):
+        self._anchor = value
+
+    def update(self):
+        for checkbox in self.container:
+            checkbox.update()
+
+
+class CheckBox(Surface):
+    __slots__ = ('_label', '_box', '_filler', '_checked', '_label_rect')
+
+    def __init__(self, label, position):
+        self._label = h3_r.render(label, True, BLACK, BOARD_COLOR)
+        self._box = Surface(40, 40)
+        self._filler = Surface(30, 30)
+        self._filler.surface.fill(WHITE)
+        self._checked = False
+        self._hovered = False
+
+        self._label_rect = self.label.get_rect()
+        self._label_rect.top = 5
+        self._label_rect.left = 70
+        self._box.rect.top = 5
+        self._filler.rect.top = 10
+        self._filler.rect.left = 5
+
+        super().__init__(
+            self._label.get_width() + 70, 
+            50 if self._label.get_height() < 50 else self._label.get_height(), 
+            position
+            )
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def label_rect(self):
+        return self._label_rect
+
+    @property
+    def box(self):
+        return self._box
+
+    @property
+    def filler(self):
+        return self._filler
+
+    @property
+    def checked(self):
+        return self._checked
+
+    @property
+    def hovered(self):
+        return self._hovered
+
+    @hovered.setter
+    def hovered(self, value):
+        self._hovered = value
+
+    @checked.setter
+    def checked(self, value):
+        self._checked = value
+
+    def update(self):
+        self.surface.fill(BOARD_COLOR)
+        self.surface.blit(self.box.surface, self.box.rect)
+        if self.checked or self.hovered:
+            self.surface.blit(self.filler.surface, self.filler.rect)
+        self.surface.blit(self.label, self._label_rect)
