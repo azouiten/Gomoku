@@ -232,24 +232,33 @@ class Setup(Surface):
     def p1_surf(self):
         return self._p1_surf
 
-    # @property
-    # def p2_surf(self):
-    #     return self._p2_surf
+    @property
+    def p1_type(self):
+        return self._p1_type
 
     @property
-    def p1_cb(self):
-        return self._p1_cb
+    def p1_mode(self):
+        return self._p1_mode
 
     def draw_box_1(self):
         header = h3_t.render('Player 1', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
-        header_rect.center = (140, self.p1_surf.rect.center[1] / 2 - 250)
+        # header_rect.center = (140, self.p1_surf.rect.center[1] / 2 - 250)
+        header_rect.center = (100, 60)
 
         self.p1_surf.surface.fill(BOARD_COLOR)
         self.p1_surf.surface.blit(header, header_rect)
 
-        self.p1_cb.update()
-        self.p1_surf.surface.blit(self.p1_cb.surface, self.p1_cb.rect)
+        # Update type checkboxs
+        self.p1_type.update()
+        self.p1_surf.surface.blit(self.p1_type.surface, self.p1_type.rect)
+
+        # Blit mode surface
+        if self.p1_type.anchor.value == 2:
+            self.p1_mode.update()
+            self.p1_surf.surface.blit(self.p1_mode.surface, self.p1_mode.rect)
+
+        # Blit first player surface on the window
         self.surface.blit(self.p1_surf.surface, self.p1_surf.rect)
 
     def loop(self):
