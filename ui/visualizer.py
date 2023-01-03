@@ -277,7 +277,6 @@ class Setup(Surface):
     def draw_box_1(self):
         header = h3_t.render('Player 1', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
-        # header_rect.center = (140, self.p1_surf.rect.center[1] / 2 - 250)
         header_rect.center = (100, 60)
 
         self.p1_surf.surface.fill(BOARD_COLOR)
@@ -298,7 +297,6 @@ class Setup(Surface):
     def draw_box_2(self):
         header = h3_t.render('Player 2', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
-        # header_rect.center = (140, self.p1_surf.rect.center[1] / 2 - 250)
         header_rect.center = (100, 60)
 
         self.p2_surf.surface.fill(BOARD_COLOR)
