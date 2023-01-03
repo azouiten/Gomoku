@@ -193,10 +193,14 @@ class CheckBoxs(Surface):
 
     def update(self):
         self.surface.fill(BOARD_COLOR)
+
+        # Set the new checkbox
         for box in self.container:
             box.update()
-            if box.checked:
+            if box.checked and box is not self.anchor:
+                self.anchor.checked = False
                 self.anchor = box
+                box.checked = True
             self.surface.blit(box.surface, box.rect)
         
 
