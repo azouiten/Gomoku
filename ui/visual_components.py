@@ -230,7 +230,7 @@ class CheckBox(Surface):
             self._label.get_width() + 70, 
             50 if self._label.get_height() < 50 else self._label.get_height(), 
             position
-            )
+        )
         self.rect.top += offset
 
     @property
@@ -259,13 +259,10 @@ class CheckBox(Surface):
 
     def check_hover(self):
         x, y = pygame.mouse.get_pos()
+        self.hovered = False
         if x >= self.position[1] and x <= self.position[1] + self.width:
             if y >= self.position[0] and y <= self.position[0] + self.height:
                 self.hovered = True
-            else:
-                self.hovered = False
-        else:
-            self.hovered = False
         return self.hovered
 
     @property
@@ -285,13 +282,11 @@ class CheckBox(Surface):
         if x >= self.position[1] and x <= self.position[1] + self.width:
             if y >= self.position[0] and y <= self.position[0] + self.height:
                 self.checked = True
-            else:
-                self.checked = False
 
     def update(self):
         self.surface.fill(BOARD_COLOR)
         self.surface.blit(self.box.surface, self.box.rect)
-        # self.check_hover()
+        self.check_hover()
         if self.checked or self.hovered:
             self.surface.blit(self.filler.surface, self.filler.rect)
         self.surface.blit(self.label, self._label_rect)
