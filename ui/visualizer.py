@@ -279,7 +279,9 @@ class Setup(Surface):
                     self.repeat = False
                     continue
                 if event.type == pygame.MOUSEBUTTONUP:
-                    for box in self.p1_cb.container:
+                    for box in self.p1_type.container:
+                        box.check_clicked()
+                    for box in self.p1_mode.container:
                         box.check_clicked()
 
             self.draw_box_1()
