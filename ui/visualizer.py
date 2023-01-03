@@ -55,11 +55,11 @@ class DataInterface:
 
     def pause(self):
         print("[DEBUG] Ai is paused.")
-        self.process.send_signal(signal.SIGSTOP)
+        self.process.kill(signal.SIGSTOP)
 
     def resume(self):
         print("[DEBUG] Ai is resumed.")
-        self.process.send_signal(signal.SIGCONT)
+        self.process.kill(signal.SIGCONT)
 
 
 class State:
