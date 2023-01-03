@@ -227,14 +227,13 @@ class Board(Surface):
     def loop(self):
         global QUIT
 
-        index_map = zip(self.linspace, range(0, 19))
         self.update()
         while self.repeat:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     QUIT = True
                     self.repeat = False
-                    continue
+                    break
                 if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.check_hover():
                     x, y = pygame.mouse.get_pos()
                     x = math.floor((x-16) / self.step)
@@ -243,7 +242,8 @@ class Board(Surface):
                     if self.state.state[y][x] == '0':
                         self.state.update(x, y, str(self.player))
                         self.player = 1 if self.player == 2 else 2
-            self.update()
+            if not QUIT:
+                self.update()
 
 
 class Setup(Surface):
@@ -459,7 +459,7 @@ class Final(Surface):
         header = h2_b.render('Game Finished!', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
         header_rect.center = (self.width / 2, self.height / 2 - 100)
-        
+
         # Mid-screen message
         if self.winner == 0:
             middle = h3_r.render('The game is a Tie', True, BLACK, BOARD_COLOR)
