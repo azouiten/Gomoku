@@ -206,6 +206,8 @@ class Setup(Surface):
         self._window = window
         self.repeat = True
 
+        # Player 1 setup surface
+
         self._p1_surf = Surface(600, 600, (150, 100))
         self._p1_surf.rect.top = 150
         self._p1_surf.rect.left = 100
@@ -223,6 +225,26 @@ class Setup(Surface):
         )
         self._p1_mode.rect.top = 250
         self._p1_mode.rect.left = 0
+
+        # Player 2 setup surface
+
+        self._p2_surf = Surface(600, 600, (150, 100))
+        self._p2_surf.rect.top = 150
+        self._p2_surf.rect.left = 600
+
+        self._p2_type = CheckBoxs(
+            (150, 600), 
+            {Setup.HUMAN: 'Human', Setup.COMPUTER: 'Computer'}
+        )
+        self._p2_type.rect.top = 100
+        self._p2_type.rect.left = 0
+
+        self._p2_mode = CheckBoxs(
+            (300, 600), 
+            {Setup.EASY: 'Easy', Setup.MEDIUM: 'Medium', Setup.HARD: 'Hard'}
+        )
+        self._p2_mode.rect.top = 250
+        self._p2_mode.rect.left = 0
         
     @property
     def window(self):
@@ -239,6 +261,18 @@ class Setup(Surface):
     @property
     def p1_mode(self):
         return self._p1_mode
+
+    @property
+    def p2_surf(self):
+        return self._p2_surf
+
+    @property
+    def p2_type(self):
+        return self._p2_type
+
+    @property
+    def p2_mode(self):
+        return self._p2_mode
 
     def draw_box_1(self):
         header = h3_t.render('Player 1', True, BLACK, BOARD_COLOR)
@@ -261,6 +295,27 @@ class Setup(Surface):
         # Blit first player surface on the window
         self.surface.blit(self.p1_surf.surface, self.p1_surf.rect)
 
+    def draw_box_2(self):
+        header = h3_t.render('Player 2', True, BLACK, BOARD_COLOR)
+        header_rect = header.get_rect()
+        # header_rect.center = (140, self.p1_surf.rect.center[1] / 2 - 250)
+        header_rect.center = (100, 60)
+
+        self.p2_surf.surface.fill(BOARD_COLOR)
+        self.p2_surf.surface.blit(header, header_rect)
+
+        # Update type checkboxs
+        self.p2_type.update()
+        self.p2_surf.surface.blit(self.p2_type.surface, self.p2_type.rect)
+
+        # Blit mode surface
+        if self.p2_type.anchor.value == 2:
+            self.p2_mode.update()
+            self.p2_surf.surface.blit(self.p2_mode.surface, self.p2_mode.rect)
+
+        # Blit first player surface on the window
+        self.surface.blit(self.p2_surf.surface, self.p2_surf.rect)
+
     def loop(self):
         global QUIT
 
@@ -272,6 +327,9 @@ class Setup(Surface):
         self.surface.fill(BOARD_COLOR)
         self.surface.blit(middle, middle_rect)
 
+        type_checkboxs = [*self.p1_type.container, *self.p2_type.container]
+        mode_checkboxs = [*self.p1_mode.container, *self.p2_mode.container]
+
         while self.repeat:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -279,12 +337,13 @@ class Setup(Surface):
                     self.repeat = False
                     continue
                 if event.type == pygame.MOUSEBUTTONUP:
-                    for box in self.p1_type.container:
+                    for box in type_checkboxs:
                         box.check_clicked()
-                    for box in self.p1_mode.container:
+                    for box in mode_checkboxs:
                         box.check_clicked()
 
             self.draw_box_1()
+            self.draw_box_2()
             self.window.blit(self)
             pygame.display.update()
 
