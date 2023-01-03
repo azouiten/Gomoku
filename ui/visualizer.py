@@ -48,10 +48,10 @@ class State:
     """
     __slots__ = ('_state',)
     def __init__(self):
-        self._state = [''.join([str(randint(0, 3)) for j in range(19)]) for i in range(19) ]
+        self._state = [[str(randint(0, 2)) for j in range(19)] for i in range(19)]
 
     def __getitem__(self, index):
-        return self.state.__getitem__(index)
+        return self.state[index]
 
     @property
     def state(self):
@@ -62,7 +62,7 @@ class State:
         self._state = new_state
 
     def update(self, x, y, player):
-        self[x][y] = player
+        self[y][x] = player
 
 class Window:
     """
@@ -183,11 +183,29 @@ class Board(Surface):
     def draw_state(self):
         for r, row in enumerate(self.state.state):
             for c, col in enumerate(row):
-                if col in '12':
+                if col in ['1', '2']:
                     color = "#ffffff" if col == '1' else "#000000"
                     x = self.linspace[c] + 1
                     y = self.linspace[r] + 1
                     draw_circle(self.board.surface, x, y, 16, pygame.Color(color))
+
+    def check_hover(self):
+        x, y = pygame.mouse.get_pos()
+        if x >= self.offset and x <= self.limit + self.offset:
+            if y >= self.offset and y <= self.limit + self.offset:
+                return True
+        return False
+
+    def show_hover(self):
+        radius = 20
+        x, y = pygame.mouse.get_pos()
+        color = "#ffffff" if self.player == 1 else "#000000"
+        nx = self.linspace[math.floor((x-radius) / self.step)]
+        ny = self.linspace[math.floor((y-radius) / self.step)]
+        if math.sqrt((x-nx)**2 + (y-ny)**2) <= 25:
+            x, y = nx + 1, ny + 1
+        draw_circle(self.board.surface, x, y, radius, pygame.Color(color))
+        return x, y
 
     def update_board(self):
         self.draw_board()
@@ -206,26 +224,10 @@ class Board(Surface):
         self.window.blit(self)
         self.window.update()
 
-    def check_hover(self):
-        x, y = pygame.mouse.get_pos()
-        if x >= self.offset and x <= self.limit + self.offset:
-            if y >= self.offset and y <= self.limit + self.offset:
-                return True
-        return False
-
-    def show_hover(self):
-        x, y = pygame.mouse.get_pos()
-        color = "#ffffff" if self.player == 1 else "#000000"
-        nx = self.linspace[math.floor((x-20) / self.step)]
-        ny = self.linspace[math.floor((y-20) / self.step)]
-        if math.sqrt((x-nx)**2 + (y-ny)**2) <= 25:
-            x, y = nx + 1, ny + 1
-        draw_circle(self.board.surface, x, y, 20, pygame.Color(color))
-        return x, y
-
     def loop(self):
         global QUIT
 
+        index_map = zip(self.linspace, range(0, 19))
         self.update()
         while self.repeat:
             for event in pygame.event.get():
@@ -233,8 +235,14 @@ class Board(Surface):
                     QUIT = True
                     self.repeat = False
                     continue
-                if event.type == pygame.MOUSEBUTTONUP and self.check_hover():
-                    self.player = 1 if self.player == 2 else 2
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and self.check_hover():
+                    x, y = pygame.mouse.get_pos()
+                    x = math.floor((x-16) / self.step)
+                    y = math.floor((y-16) / self.step)
+                    print(x, y, self.state.state[y][x])
+                    if self.state.state[y][x] == '0':
+                        self.state.update(x, y, str(self.player))
+                        self.player = 1 if self.player == 2 else 2
             self.update()
 
 
