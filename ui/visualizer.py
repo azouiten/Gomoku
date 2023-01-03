@@ -6,6 +6,10 @@ from fonts import *
 import subprocess
 from pygame import gfxdraw
 from random import randint
+import signal
+import pexpect
+from pexpect.popen_spawn import PopenSpawn
+
 
 # Setup relevant variables
 QUIT = False
@@ -31,15 +35,31 @@ class DataInterface:
     This class represents the medium of data transfer between the visualizer
     and the gomoku executable.
     """
+    __slots__ = ('_process', '_stdout', '_stdin')
     def __init__(self, target=None):
-        self._process = subprocess.Popen('')
-    
+        self._process = PopenSpawn('../src/a.out')
+        self._stdout = self._process.stdout
+        self._stdin = self._process.stdin
+
     @property
     def process(self):
         return self._process
 
-    def create_outward_pip(self):
-        pass
+    @property
+    def stdout(self):
+        return self._stdout
+
+    @property
+    def stdin(self):
+        return self._stdin
+
+    def pause(self):
+        print("[DEBUG] Ai is paused.")
+        self.process.send_signal(signal.SIGSTOP)
+
+    def resume(self):
+        print("[DEBUG] Ai is resumed.")
+        self.process.send_signal(signal.SIGCONT)
 
 
 class State:
@@ -266,19 +286,24 @@ class Board(Surface):
     """ 
     This class represents the board surface (game board + sidebar).
     """
-    __slots__ = ('_player', '_board', '_sidebar', '_state', '_window', '_repeat', '_offset', '_limit', '_step', '_linspace')
-    def __init__(self, window, player, initial_state):
+    __slots__ = ('_player', '_board', '_sidebar', '_state', '_window', '_repeat', '_offset', '_limit', '_step', '_linspace', '_setup')
+    def __init__(self, window, player, initial_state, setup):
         super().__init__(WIDTH, HEIGHT, (0, 0))
-        self._player  = player
-        self._board   = Surface(HEIGHT, HEIGHT, None)
-        self._sidebar = Surface(WIDTH-HEIGHT, HEIGHT, None)
-        self._state   = initial_state
-        self._window  = window
+        self._player   = player
+        self._board    = Surface(HEIGHT, HEIGHT, None)
+        self._sidebar  = Surface(WIDTH-HEIGHT, HEIGHT, None)
+        self._state    = initial_state
+        self._window   = window
         self._repeat   = True
         self._offset   = 40
         self._limit    = self.board.height - self.offset * 2 - 18
         self._step     = int(self.limit / 18)
         self._linspace = [i+self.step for i in range(0, self.board.width - self.offset, self.step)]
+        self._setup    = setup
+
+    @property
+    def setup(self):
+        return self._setup
 
     @property
     def player(self):
@@ -408,7 +433,6 @@ class Board(Surface):
                     x, y = pygame.mouse.get_pos()
                     x = math.floor((x-16) / self.step)
                     y = math.floor((y-16) / self.step)
-                    print(x, y, self.state.state[y][x])
                     if self.state.state[y][x] == '0':
                         self.state.update(x, y, str(self.player))
                         self.player = 1 if self.player == 2 else 2
@@ -426,7 +450,12 @@ class Final(Surface):
         self._repeat = True
         self._window = window
         self._winner = 2
-        self._button = Button(self.width / 2, self.height / 2 + 200, "#000000", "#F5BB55", "REMATCH", h3_t)
+        self._button = Button(int(self.width / 2), int(self.height / 2) + 200, "#000000", "#F5BB55", "REMATCH", h3_t)
+        self._process = DataInterface()
+
+    @property
+    def process(self):
+        return self._process
 
     @property
     def window(self):
@@ -458,7 +487,7 @@ class Final(Surface):
         # Header message
         header = h2_b.render('Game Finished!', True, BLACK, BOARD_COLOR)
         header_rect = header.get_rect()
-        header_rect.center = (self.width / 2, self.height / 2 - 100)
+        header_rect.center = (int(self.width / 2), int(self.height / 2) - 100)
 
         # Mid-screen message
         if self.winner == 0:
@@ -466,13 +495,13 @@ class Final(Surface):
         else:
             middle = h3_r.render(f'Player {self.winner} is Victorious', True, BLACK, BOARD_COLOR)
         middle_rect = middle.get_rect()
-        middle_rect.center = (self.width / 2, self.height / 2)
+        middle_rect.center = (int(self.width / 2), int(self.height / 2))
 
         # Put text on the surface
         self.surface.fill(BOARD_COLOR)
         self.surface.blit(header, header_rect)
         self.surface.blit(middle, middle_rect)
-
+        process_paused = True
         while self.repeat:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -481,7 +510,17 @@ class Final(Surface):
                     continue
                 elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     if self.button.clicked():
-                        return Game.SETUP
+                        # return Game.SETUP
+                        for i in range(10):
+                            string = '[VISU] sent [{}]'.format(i)
+                            self.process.process.sendline(string)
+                        string = 'RECEIVE_END'
+                        self.process.process.sendline(string)
+
+                        self.process.process.expect('RECEIVE_END')
+                        print('received: [{}]'.format(self.process.process.before))
+                        print('receiving finished')
+
 
             self.button.update()
             self.surface.blit(self.button.surface, self.button.rect)
@@ -502,7 +541,7 @@ class Game:
         self._state         = State()
         self._window        = Window()
         self._setup_surface = Setup(self._window)
-        self._board_surface = Board(self._window, 1, self._state)
+        self._board_surface = Board(self._window, 1, self._state, self._setup_surface)
         self._final_surface = Final(self._window)
         self._current_surface = Game.FINAL
 
@@ -537,16 +576,23 @@ class Game:
     def run(self):
         global QUIT
 
-        while not QUIT:
-            if self.current_surface == Game.SETUP:
-                self.current_surface = self.setup_surface.loop()
-            elif self.current_surface == Game.BOARD:
-                self.current_surface = self.board_surface.loop()
-            elif self.current_surface == Game.FINAL:
-                self.current_surface = self.final_surface.loop()
+        try:
+            self.final_surface.loop()
+        except Exception as E:
+            self.final_surface.process.process.kill(signal.SIGKILL)
+            raise(E)
+        # while not QUIT:
+        #     if self.current_surface == Game.SETUP:
+        #         self.current_surface = self.setup_surface.loop()
+        #     elif self.current_surface == Game.BOARD:
+        #         self.current_surface = self.board_surface.loop()
+        #     elif self.current_surface == Game.FINAL:
+        #         self.current_surface = self.final_surface.loop()
 
 
 if __name__ == "__main__":
     game = Game()
     game.run()
-
+    game.final_surface.process.process.kill(signal.SIGKILL)
+# [*] Link the setup with the board
+# [ ] push
