@@ -210,10 +210,19 @@ class Setup(Surface):
         self._p1_surf.rect.top = 150
         self._p1_surf.rect.left = 100
 
-        self._p1_cb = CheckBoxs(
-            self._p1_surf.position, 
-            {1: 'Computer', 2: 'Human'}
+        self._p1_type = CheckBoxs(
+            (150, 100), 
+            {Setup.HUMAN: 'Human', Setup.COMPUTER: 'Computer'}
         )
+        self._p1_type.rect.top = 100
+        self._p1_type.rect.left = 0
+
+        self._p1_mode = CheckBoxs(
+            (300, 100), 
+            {Setup.EASY: 'Easy', Setup.MEDIUM: 'Medium', Setup.HARD: 'Hard'}
+        )
+        self._p1_mode.rect.top = 250
+        self._p1_mode.rect.left = 0
         
     @property
     def window(self):
