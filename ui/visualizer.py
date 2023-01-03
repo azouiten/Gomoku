@@ -206,8 +206,9 @@ class Setup(Surface):
         self._window = window
         self.repeat = True
 
-        # Player 1 setup surface
+        self._start = Button(150, 100, "#000000", "#66F587", "START", h3_t)
 
+        # Player 1 setup surface
         self._p1_surf = Surface(600, 600, (150, 100))
         self._p1_surf.rect.top = 150
         self._p1_surf.rect.left = 100
@@ -249,6 +250,14 @@ class Setup(Surface):
     @property
     def window(self):
         return self._window
+
+    @property
+    def start(self):
+        return self._start
+
+    @start.setter
+    def start(self, value):
+        self._start = value
 
     @property
     def p1_surf(self):
@@ -334,12 +343,16 @@ class Setup(Surface):
                     QUIT = True
                     self.repeat = False
                     continue
-                if event.type == pygame.MOUSEBUTTONUP:
+                if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                    if self.start.clicked():
+                        return Game.BOARD
                     for box in type_checkboxs:
                         box.check_clicked()
                     for box in mode_checkboxs:
                         box.check_clicked()
 
+            self.start.update()
+            self.surface.blit(self.start.surface, self.start.rect)
             self.draw_box_1()
             self.draw_box_2()
             self.window.blit(self)
@@ -353,7 +366,7 @@ class Final(Surface):
     """
     def __init__(self, window):
         super().__init__(WIDTH, HEIGHT, (0, 0))
-        self.repeat = True
+        self._repeat = True
         self._window = window
         self._winner = 2
         self._button = Button(self.width / 2, self.height / 2 + 200, "#000000", "#F5BB55", "REMATCH", h3_t)
@@ -373,6 +386,14 @@ class Final(Surface):
     @property
     def button(self):
         return self._button
+
+    @property
+    def repeat(self):
+        return self._repeat
+
+    @repeat.setter
+    def repeat(self, value):
+        self._repeat = value
 
     def loop(self):
         global QUIT
@@ -403,7 +424,7 @@ class Final(Surface):
                     continue
                 elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     if self.button.clicked():
-                        return 1
+                        return Game.SETUP
 
             self.button.update()
             self.surface.blit(self.button.surface, self.button.rect)
@@ -415,15 +436,18 @@ class Game:
     """
     This class represents the game logic.
     """
+
+    SETUP = 1
+    BOARD = 2
+    FINAL = 3
+
     def __init__(self):
-        self.repeat         = True
         self._state         = State()
         self._window        = Window()
         self._setup_surface = Setup(self._window)
         self._board_surface = Board(self._window, 1, self._state)
         self._final_surface = Final(self._window)
-        self._current_surface = 1
-
+        self._current_surface = Game.FINAL
 
     @property
     def window(self):
@@ -457,11 +481,11 @@ class Game:
         global QUIT
 
         while not QUIT:
-            if self.current_surface == 1:
+            if self.current_surface == Game.SETUP:
                 self.current_surface = self.setup_surface.loop()
-            elif self.current_surface == 2:
+            elif self.current_surface == Game.BOARD:
                 self.current_surface = self.board_surface.loop()
-            elif self.current_surface == 3:
+            elif self.current_surface == Game.FINAL:
                 self.current_surface = self.final_surface.loop()
 
 
