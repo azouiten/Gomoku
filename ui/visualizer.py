@@ -365,7 +365,7 @@ class Game:
         self._setup_surface = Setup(self._window)
         self._board_surface = Board(self._window, 1, self._state)
         self._final_surface = Final(self._window)
-        self._current_surface = 2
+        self._current_surface = 1
 
 
     @property
