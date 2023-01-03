@@ -193,6 +193,14 @@ class Setup(Surface):
     """ 
     This class represents the setup surface
     """
+
+    HUMAN    = 1
+    COMPUTER = 2
+
+    EASY   = 1
+    MEDIUM = 2
+    HARD   = 3
+
     def __init__(self, window):
         super().__init__(WIDTH, HEIGHT, (0, 0))
         self._window = window
