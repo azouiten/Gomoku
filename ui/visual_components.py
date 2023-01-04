@@ -174,7 +174,7 @@ class CheckBoxs(Surface):
             total_width = checkbox.width if checkbox.width > total_width else total_width
 
         # Anchor to first element of container list or set to None
-        self._anchor = self._container[0] if self._container else None
+        self._anchor = self._container[0]
         self._anchor.checked = True
         super().__init__(total_width, offset, (position[0]+100, position[1]))
         self.rect.top += 100
