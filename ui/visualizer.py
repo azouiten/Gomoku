@@ -30,36 +30,49 @@ def draw_circle(surface, x, y, radius, color):
 pygame.init()
 
 
-class DataInterface:
+class Computer:
     """
-    This class represents the medium of data transfer between the visualizer
-    and the gomoku executable.
+    This class represents the computer players' process.
     """
-    __slots__ = ('_process', '_stdout', '_stdin')
-    def __init__(self, target=None):
-        self._process = PopenSpawn('../src/a.out')
-        self._stdout = self._process.stdout
-        self._stdin = self._process.stdin
+
+    __slots__ = ('_process', '_executable')
+    def __init__(self, executable):
+        self._executable = executable
+        self._process = None
 
     @property
     def process(self):
         return self._process
 
-    @property
-    def stdout(self):
-        return self._stdout
+    @process.setter
+    def process(self, value):
+        self._process = value
 
     @property
-    def stdin(self):
-        return self._stdin
+    def executable(self):
+        return self._executable
+
+    def start(self):
+        self._process = PopenSpawn(self.executable)
 
     def pause(self):
-        print("[DEBUG] Ai is paused.")
-        self.process.kill(signal.SIGSTOP)
+        if self.process:
+            self.process.kill(signal.SIGSTOP)
 
     def resume(self):
-        print("[DEBUG] Ai is resumed.")
-        self.process.kill(signal.SIGCONT)
+        if self.process:
+            self.process.kill(signal.SIGCONT)
+
+    def read_buffer(self):
+        if self.process:
+            return self.process.before.decode('utf-8').split('\n')
+
+    def next_move(self):
+        if self.process:
+            buffer = self.read_buffer()
+            coordinates = [int(i) for i in buffer[-1].split()]
+            return coordinates
+        
 
 
 class State:
@@ -451,11 +464,6 @@ class Final(Surface):
         self._window = window
         self._winner = 2
         self._button = Button(int(self.width / 2), int(self.height / 2) + 200, "#000000", "#F5BB55", "REMATCH", h3_t)
-        self._process = DataInterface()
-
-    @property
-    def process(self):
-        return self._process
 
     @property
     def window(self):
@@ -501,7 +509,6 @@ class Final(Surface):
         self.surface.fill(BOARD_COLOR)
         self.surface.blit(header, header_rect)
         self.surface.blit(middle, middle_rect)
-        process_paused = True
         while self.repeat:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -510,17 +517,7 @@ class Final(Surface):
                     continue
                 elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                     if self.button.clicked():
-                        # return Game.SETUP
-                        for i in range(10):
-                            string = '[VISU] sent [{}]'.format(i)
-                            self.process.process.sendline(string)
-                        string = 'RECEIVE_END'
-                        self.process.process.sendline(string)
-
-                        self.process.process.expect('RECEIVE_END')
-                        print('received: [{}]'.format(self.process.process.before))
-                        print('receiving finished')
-
+                        return Game.SETUP
 
             self.button.update()
             self.surface.blit(self.button.surface, self.button.rect)
@@ -533,17 +530,20 @@ class Game:
     This class represents the game logic.
     """
 
+    __slots__ = ('_state', '_window', '_setup_surface', '_board_surface', '_final_surface', '_current_surface', '_computer')
+
     SETUP = 1
     BOARD = 2
     FINAL = 3
 
     def __init__(self):
-        self._state         = State()
-        self._window        = Window()
-        self._setup_surface = Setup(self._window)
-        self._board_surface = Board(self._window, 1, self._state, self._setup_surface)
-        self._final_surface = Final(self._window)
+        self._state           = State()
+        self._window          = Window()
+        self._setup_surface   = Setup(self._window)
+        self._board_surface   = Board(self._window, 1, self._state, self._setup_surface)
+        self._final_surface   = Final(self._window)
         self._current_surface = Game.FINAL
+        self._computer        = Computer('../src/a.out')
 
     @property
     def window(self):
@@ -573,26 +573,26 @@ class Game:
     def state(self):
         return self._state
 
+    @property
+    def computer(self):
+        return self._computer
+
     def run(self):
         global QUIT
 
-        try:
-            self.final_surface.loop()
-        except Exception as E:
-            self.final_surface.process.process.kill(signal.SIGKILL)
-            raise(E)
-        # while not QUIT:
-        #     if self.current_surface == Game.SETUP:
-        #         self.current_surface = self.setup_surface.loop()
-        #     elif self.current_surface == Game.BOARD:
-        #         self.current_surface = self.board_surface.loop()
-        #     elif self.current_surface == Game.FINAL:
-        #         self.current_surface = self.final_surface.loop()
+        while not QUIT:
+            if self.current_surface == Game.SETUP:
+                self.current_surface = self.setup_surface.loop()
+            elif self.current_surface == Game.BOARD:
+                self.current_surface = self.board_surface.loop()
+            elif self.current_surface == Game.FINAL:
+                self.current_surface = self.final_surface.loop()
 
 
 if __name__ == "__main__":
     game = Game()
     game.run()
-    game.final_surface.process.process.kill(signal.SIGKILL)
-# [*] Link the setup with the board
+
+# [ ] Link the setup with the board
+# [ ] Kill the bot(computer) process at the end
 # [ ] push
