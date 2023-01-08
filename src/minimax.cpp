@@ -112,3 +112,21 @@ std::pair<t_coord, int> minimax(int depth, t_board &board, int &alpha, int &beta
         return maximize(depth, board, alpha, beta, player);
     return minimize(depth, board, alpha, beta, player);
 }
+
+
+// Main points:
+// 1. Minimax with Alpha-Beta pruning
+// 2. Heuristic search:
+
+// 2.1. Eval(i, j) = ((AttackValue(i, j) * AttackFactor) + (DefenseValue(i, j)) * randomnessFactor
+//      - The attack factor will define the aggrissevness of the bot attack strategy.
+//      - The randomnessFactor will decide the dumbness of the bot.
+
+// 2.2. Beam-search:
+//      - Limits the number of searched nodes depending on the current state of the game.
+//      - If the bot is winning, the beam-search width is reduced dramitically leaving only few nodes
+//        to search. Otherwise, the width is expanded the include more of the possible nodes.
+
+// 2.3. Threats.
+// 2.4. Thread evaluation.
+// 2.5. Evaluation function
