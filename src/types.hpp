@@ -1,6 +1,9 @@
 #ifndef __TYPES__
 #define __TYPES__
 
+#include <vector>
+#include <bits/stdc++.h>
+
 // Bit maps of each color in the board
 typedef std::vector<std::pair<std::bitset<19>, std::bitset<19>> > t_board;
 
