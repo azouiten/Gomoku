@@ -6,18 +6,6 @@
 #define GET_BIT(bitset, index) (bitset[18 + index])
 
 
-t_superposition superpose(t_board &board)
-{
-    t_superposition superposition;
-
-    for (t_board::iterator row = board.begin(); row != board.end(); row++)
-    {
-        superposition.push_back((*row).first.to_ulong() | (*row).second.to_ulong());
-    }
-    return superposition;
-}
-
-
 std::vector<t_coord> get_possible_coords(t_board &board, int player)
 {
     std::vector<t_coord> coords;
